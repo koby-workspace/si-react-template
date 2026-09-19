@@ -4,11 +4,12 @@ import { Button, Form, Input, message, Select, Space } from "antd";
 import { AllCommunityModule } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import UserCreateModal from "../components/UserCreateModal.jsx";
+import UserEditModal from "../components/UserEditModal.jsx";
 import { roleOptions, statusOptions } from "../userOptions.js";
 
 const modules = [AllCommunityModule];
 
-const columnDefs = [
+const userColumnDefs = [
   { field: "loginId", headerName: "아이디" },
   { field: "name", headerName: "이름" },
   { field: "email", headerName: "이메일", flex: 2 },
@@ -47,7 +48,29 @@ function UsersPage() {
   const [users, setUsers] = useState(initialUsers);
   const [searchValues, setSearchValues] = useState({});
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
   const [messageApi, contextHolder] = message.useMessage();
+
+  const columnDefs = useMemo(
+    () => [
+      ...userColumnDefs,
+      {
+        headerName: "관리",
+        width: 90,
+        minWidth: 90,
+        maxWidth: 90,
+        sortable: false,
+        filter: false,
+        resizable: false,
+        cellRenderer: ({ data }) => (
+          <Button size="small" onClick={() => setEditingUser(data)}>
+            수정
+          </Button>
+        ),
+      },
+    ],
+    [],
+  );
 
   const existingLoginIds = useMemo(
     () => new Set(users.map((user) => user.loginId.toLowerCase())),
@@ -100,6 +123,16 @@ function UsersPage() {
     ]);
     setIsAddModalOpen(false);
     messageApi.success("사용자를 추가했습니다.");
+  };
+
+  const handleEdit = (values) => {
+    setUsers((currentUsers) =>
+      currentUsers.map((user) =>
+        user.id === editingUser.id ? { ...user, ...values } : user,
+      ),
+    );
+    setEditingUser(null);
+    messageApi.success("사용자 정보를 수정했습니다.");
   };
 
   return (
@@ -172,6 +205,11 @@ function UsersPage() {
         existingLoginIds={existingLoginIds}
         onCreate={handleAdd}
         onCancel={() => setIsAddModalOpen(false)}
+      />
+      <UserEditModal
+        user={editingUser}
+        onSave={handleEdit}
+        onCancel={() => setEditingUser(null)}
       />
     </div>
   );
