@@ -1,6 +1,18 @@
 import { useMemo, useState } from "react";
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Form, Input, message, Select, Space } from "antd";
+import {
+  DeleteOutlined,
+  PlusOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
+import {
+  Button,
+  Form,
+  Input,
+  message,
+  Popconfirm,
+  Select,
+  Space,
+} from "antd";
 import { AllCommunityModule } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import UserCreateModal from "../components/UserCreateModal.jsx";
@@ -49,6 +61,7 @@ function UsersPage() {
   const [searchValues, setSearchValues] = useState({});
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [selectedUsers, setSelectedUsers] = useState([]);
   const [messageApi, contextHolder] = message.useMessage();
 
   const columnDefs = useMemo(
@@ -135,6 +148,16 @@ function UsersPage() {
     messageApi.success("사용자 정보를 수정했습니다.");
   };
 
+  const handleDeleteSelected = () => {
+    const selectedIds = new Set(selectedUsers.map((user) => user.id));
+
+    setUsers((currentUsers) =>
+      currentUsers.filter((user) => !selectedIds.has(user.id)),
+    );
+    setSelectedUsers([]);
+    messageApi.success(`${selectedIds.size}명의 사용자를 삭제했습니다.`);
+  };
+
   return (
     <div
       style={{
@@ -180,6 +203,23 @@ function UsersPage() {
             >
               추가
             </Button>
+            <Popconfirm
+              title="사용자 일괄 삭제"
+              description={`선택한 ${selectedUsers.length}명의 사용자를 삭제하시겠습니까?`}
+              okText="삭제"
+              cancelText="취소"
+              okButtonProps={{ danger: true }}
+              disabled={selectedUsers.length === 0}
+              onConfirm={handleDeleteSelected}
+            >
+              <Button
+                danger
+                disabled={selectedUsers.length === 0}
+                icon={<DeleteOutlined />}
+              >
+                삭제{selectedUsers.length > 0 && ` (${selectedUsers.length})`}
+              </Button>
+            </Popconfirm>
             <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
               조회
             </Button>
@@ -194,6 +234,9 @@ function UsersPage() {
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
           getRowId={({ data }) => data.id}
+          rowSelection={{ mode: "multiRow", enableClickSelection: false }}
+          selectionColumnDef={{ width: 48, resizable: false }}
+          onSelectionChanged={({ api }) => setSelectedUsers(api.getSelectedRows())}
           pagination
           paginationPageSize={20}
           paginationPageSizeSelector={[10, 20, 50]}
