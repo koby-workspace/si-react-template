@@ -18,7 +18,13 @@ function App() {
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Header
-        style={{ color: "#ffffff", display: "flex", alignItems: "center", gap: 16, paddingLeft: 12 }}
+        style={{
+          color: "#ffffff",
+          display: "flex",
+          alignItems: "center",
+          gap: 16,
+          paddingLeft: 12,
+        }}
       >
         <Button
           type="primary"
@@ -41,7 +47,7 @@ function App() {
             />
           </Sider>
         )}
-        <Content style={{ padding: 24 }}>
+        <Content style={{ overflow: "hidden", padding: 24 }}>
           <AppRoutes />
         </Content>
       </Layout>

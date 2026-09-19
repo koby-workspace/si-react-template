@@ -1,4 +1,3 @@
-import { Card } from "antd";
 import { AllCommunityModule } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 
@@ -21,54 +20,36 @@ const defaultColDef = {
   resizable: true,
 };
 
-const rowData = [
-  {
-    id: "1",
-    loginId: "admin",
-    name: "관리자",
-    email: "admin@example.com",
-    role: "관리자",
-    status: "사용",
-    createdAt: "2026-09-01",
-  },
-  {
-    id: "2",
-    loginId: "hong",
-    name: "홍길동",
-    email: "hong@example.com",
-    role: "일반 사용자",
-    status: "사용",
-    createdAt: "2026-09-10",
-  },
-  {
-    id: "3",
-    loginId: "kim",
-    name: "김철수",
-    email: "kim@example.com",
-    role: "일반 사용자",
-    status: "미사용",
-    createdAt: "2026-09-15",
-  },
-];
+const names = ["김민준", "이서준", "박지훈", "최도윤", "정현우"];
+
+const rowData = Array.from({ length: 45 }, (_, index) => {
+  const userNumber = index + 1;
+
+  return {
+    id: String(userNumber),
+    loginId: userNumber === 1 ? "admin" : `user${String(userNumber).padStart(2, "0")}`,
+    name: userNumber === 1 ? "관리자" : names[index % names.length],
+    email: userNumber === 1 ? "admin@example.com" : `user${userNumber}@example.com`,
+    role: userNumber === 1 ? "관리자" : "일반 사용자",
+    status: userNumber % 7 === 0 ? "미사용" : "사용",
+    createdAt: `2026-09-${String((index % 20) + 1).padStart(2, "0")}`,
+  };
+});
 
 function UsersPage() {
   return (
-    <>
-      <h1>사용자 관리</h1>
-      <Card>
-        <div style={{ height: 500 }}>
-          <AgGridReact
-            modules={modules}
-            rowData={rowData}
-            columnDefs={columnDefs}
-            defaultColDef={defaultColDef}
-            getRowId={({ data }) => data.id}
-            pagination
-            paginationPageSize={10}
-          />
-        </div>
-      </Card>
-    </>
+    <div style={{ height: "100%", minHeight: 0 }}>
+      <AgGridReact
+        modules={modules}
+        rowData={rowData}
+        columnDefs={columnDefs}
+        defaultColDef={defaultColDef}
+        getRowId={({ data }) => data.id}
+        pagination
+        paginationPageSize={20}
+        paginationPageSizeSelector={[10, 20, 50]}
+      />
+    </div>
   );
 }
 
