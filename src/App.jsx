@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import { Button, Layout, Menu } from "antd";
-import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router";
-import DashboardPage from "./pages/DashboardPage.jsx";
-import UsersPage from "./pages/UsersPage.jsx";
+import { useLocation, useNavigate } from "react-router";
+import AppRoutes from "./routes/AppRoutes.jsx";
 
 const { Header, Sider, Content } = Layout;
 const menuItems = [
@@ -43,11 +42,7 @@ function App() {
           </Sider>
         )}
         <Content style={{ padding: 24 }}>
-          <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/users" element={<UsersPage />} />
-          </Routes>
+          <AppRoutes />
         </Content>
       </Layout>
     </Layout>
