@@ -4,8 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "vite --mode localhost",
+    "build": "vite build --mode localhost",
+    "build:dev": "vite build --mode dev",
+    "build:prd": "vite build --mode prd",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -13,6 +15,7 @@
     "@ant-design/icons": "^6.3.4",
     "ag-grid-react": "^36.2.0",
     "antd": "^6.6.4",
+    "axios": "^1.20.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router": "^8.4.0"

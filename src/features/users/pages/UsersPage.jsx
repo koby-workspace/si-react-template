@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   DeleteOutlined,
   PlusOutlined,
@@ -17,6 +17,7 @@ import { AllCommunityModule } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import UserCreateModal from "../components/UserCreateModal.jsx";
 import UserEditModal from "../components/UserEditModal.jsx";
+import * as userApi from "../api/userApi.js";
 import { roleOptions, statusOptions } from "../userOptions.js";
 
 const modules = [AllCommunityModule];
@@ -38,31 +39,57 @@ const defaultColDef = {
   resizable: true,
 };
 
-const names = ["김민수", "이서준", "박지우", "최도윤", "정현우"];
-
-const initialUsers = Array.from({ length: 45 }, (_, index) => {
-  const userNumber = index + 1;
-
-  return {
-    id: String(userNumber),
-    loginId:
-      userNumber === 1 ? "admin" : `user${String(userNumber).padStart(2, "0")}`,
-    name: userNumber === 1 ? "관리자" : names[index % names.length],
-    email:
-      userNumber === 1 ? "admin@example.com" : `user${userNumber}@example.com`,
-    role: userNumber === 1 ? "관리자" : "일반 사용자",
-    status: userNumber % 7 === 0 ? "미사용" : "사용",
-    createdAt: `2026-09-${String((index % 20) + 1).padStart(2, "0")}`,
-  };
-});
-
 function UsersPage() {
-  const [users, setUsers] = useState(initialUsers);
+  const [users, setUsers] = useState([]);
   const [searchValues, setSearchValues] = useState({});
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [selectedUsers, setSelectedUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [messageApi, contextHolder] = message.useMessage();
+
+  const loadUsers = useCallback(
+    async (params) => {
+      setLoading(true);
+
+      try {
+        const data = await userApi.getUsers(params);
+        setUsers(data);
+        setSelectedUsers([]);
+      } catch {
+        messageApi.error("사용자 목록을 불러오지 못했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [messageApi],
+  );
+
+  useEffect(() => {
+    let active = true;
+
+    userApi
+      .getUsers({})
+      .then((data) => {
+        if (active) {
+          setUsers(data);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          messageApi.error("사용자 목록을 불러오지 못했습니다.");
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [messageApi]);
 
   const columnDefs = useMemo(
     () => [
@@ -90,72 +117,47 @@ function UsersPage() {
     [users],
   );
 
-  const filteredUsers = useMemo(() => {
-    const normalizedLoginId = searchValues.loginId?.trim().toLowerCase();
-    const normalizedName = searchValues.name?.trim().toLowerCase();
-    const normalizedEmail = searchValues.email?.trim().toLowerCase();
-
-    return users.filter((user) => {
-      const matchesLoginId =
-        !normalizedLoginId ||
-        user.loginId.toLowerCase().includes(normalizedLoginId);
-      const matchesName =
-        !normalizedName || user.name.toLowerCase().includes(normalizedName);
-      const matchesEmail =
-        !normalizedEmail || user.email.toLowerCase().includes(normalizedEmail);
-      const matchesRole = !searchValues.role || user.role === searchValues.role;
-      const matchesStatus =
-        !searchValues.status || user.status === searchValues.status;
-
-      return (
-        matchesLoginId &&
-        matchesName &&
-        matchesEmail &&
-        matchesRole &&
-        matchesStatus
-      );
-    });
-  }, [searchValues, users]);
-
-  const handleAdd = (values) => {
-    const nextId = String(
-      Math.max(0, ...users.map(({ id }) => Number(id))) + 1,
-    );
-
-    setUsers((currentUsers) => [
-      {
-        id: nextId,
-        loginId: values.loginId,
-        name: values.name,
-        email: values.email,
-        role: values.role,
-        status: values.status,
-        createdAt: new Date().toLocaleDateString("sv-SE"),
-      },
-      ...currentUsers,
-    ]);
-    setIsAddModalOpen(false);
-    messageApi.success("사용자를 추가했습니다.");
+  const handleSearch = async (values) => {
+    setSearchValues(values);
+    await loadUsers(values);
   };
 
-  const handleEdit = (values) => {
-    setUsers((currentUsers) =>
-      currentUsers.map((user) =>
-        user.id === editingUser.id ? { ...user, ...values } : user,
-      ),
-    );
-    setEditingUser(null);
-    messageApi.success("사용자 정보를 수정했습니다.");
+  const handleAdd = async (values) => {
+    try {
+      await userApi.createUser(values);
+      await loadUsers(searchValues);
+      setIsAddModalOpen(false);
+      messageApi.success("사용자를 추가했습니다.");
+      return true;
+    } catch (error) {
+      messageApi.error(error.message || "사용자를 추가하지 못했습니다.");
+      return false;
+    }
   };
 
-  const handleDeleteSelected = () => {
-    const selectedIds = new Set(selectedUsers.map((user) => user.id));
+  const handleEdit = async (values) => {
+    try {
+      await userApi.updateUser(editingUser.id, values);
+      await loadUsers(searchValues);
+      setEditingUser(null);
+      messageApi.success("사용자 정보를 수정했습니다.");
+      return true;
+    } catch {
+      messageApi.error("사용자 정보를 수정하지 못했습니다.");
+      return false;
+    }
+  };
 
-    setUsers((currentUsers) =>
-      currentUsers.filter((user) => !selectedIds.has(user.id)),
-    );
-    setSelectedUsers([]);
-    messageApi.success(`${selectedIds.size}명의 사용자를 삭제했습니다.`);
+  const handleDeleteSelected = async () => {
+    const ids = selectedUsers.map((user) => user.id);
+
+    try {
+      await userApi.deleteUsers(ids);
+      await loadUsers(searchValues);
+      messageApi.success(`${ids.length}명의 사용자를 삭제했습니다.`);
+    } catch {
+      messageApi.error("사용자를 삭제하지 못했습니다.");
+    }
   };
 
   return (
@@ -169,7 +171,7 @@ function UsersPage() {
       }}
     >
       {contextHolder}
-      <Form layout="inline" onFinish={setSearchValues}>
+      <Form layout="inline" onFinish={handleSearch}>
         <div
           style={{ display: "flex", alignItems: "flex-start", width: "100%" }}
         >
@@ -230,13 +232,14 @@ function UsersPage() {
       <div style={{ flex: 1, minHeight: 0 }}>
         <AgGridReact
           modules={modules}
-          rowData={filteredUsers}
+          rowData={users}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
           getRowId={({ data }) => data.id}
           rowSelection={{ mode: "multiRow", enableClickSelection: false }}
           selectionColumnDef={{ width: 48, resizable: false }}
           onSelectionChanged={({ api }) => setSelectedUsers(api.getSelectedRows())}
+          loading={loading}
           pagination
           paginationPageSize={20}
           paginationPageSizeSelector={[10, 20, 50]}

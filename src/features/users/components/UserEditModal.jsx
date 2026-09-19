@@ -14,11 +14,15 @@ function UserEditModal({ user, onSave, onCancel }) {
   const handleOk = async () => {
     const values = await form.validateFields();
 
-    onSave({
+    const saved = await onSave({
       ...values,
       name: values.name.trim(),
       email: values.email.trim(),
     });
+
+    if (saved) {
+      form.resetFields();
+    }
   };
 
   return (

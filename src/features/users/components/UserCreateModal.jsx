@@ -7,13 +7,15 @@ function UserCreateModal({ open, existingLoginIds, onCreate, onCancel }) {
   const handleOk = async () => {
     const values = await form.validateFields();
 
-    onCreate({
+    const created = await onCreate({
       ...values,
       loginId: values.loginId.trim(),
       name: values.name.trim(),
       email: values.email.trim(),
     });
-    form.resetFields();
+    if (created) {
+      form.resetFields();
+    }
   };
 
   const handleCancel = () => {
