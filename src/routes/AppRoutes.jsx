@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from "react-router";
-import DashboardPage from "../pages/DashboardPage.jsx";
-import UsersPage from "../pages/UsersPage.jsx";
+import DashboardPage from "../features/dashboard/pages/DashboardPage.jsx";
+import UsersPage from "../features/users/pages/UsersPage.jsx";
 
 function AppRoutes() {
   return (
