@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { SearchOutlined } from "@ant-design/icons";
+import { Button, Form, Input, Select } from "antd";
 import { AllCommunityModule } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 
@@ -37,18 +40,82 @@ const rowData = Array.from({ length: 45 }, (_, index) => {
 });
 
 function UsersPage() {
+  const [filteredRowData, setFilteredRowData] = useState(rowData);
+
+  const handleSearch = ({ loginId, name, email, role, status }) => {
+    const normalizedLoginId = loginId?.trim().toLowerCase();
+    const normalizedName = name?.trim().toLowerCase();
+    const normalizedEmail = email?.trim().toLowerCase();
+
+    setFilteredRowData(
+      rowData.filter((user) => {
+        const matchesLoginId =
+          !normalizedLoginId || user.loginId.toLowerCase().includes(normalizedLoginId);
+        const matchesName = !normalizedName || user.name.toLowerCase().includes(normalizedName);
+        const matchesEmail = !normalizedEmail || user.email.toLowerCase().includes(normalizedEmail);
+        const matchesRole = !role || user.role === role;
+        const matchesStatus = !status || user.status === status;
+
+        return matchesLoginId && matchesName && matchesEmail && matchesRole && matchesStatus;
+      }),
+    );
+  };
+
   return (
-    <div style={{ height: "100%", minHeight: 0 }}>
-      <AgGridReact
-        modules={modules}
-        rowData={rowData}
-        columnDefs={columnDefs}
-        defaultColDef={defaultColDef}
-        getRowId={({ data }) => data.id}
-        pagination
-        paginationPageSize={20}
-        paginationPageSizeSelector={[10, 20, 50]}
-      />
+    <div style={{ display: "flex", flexDirection: "column", gap: 16, height: "100%", minHeight: 0 }}>
+      <Form layout="inline" onFinish={handleSearch}>
+        <div style={{ display: "flex", alignItems: "flex-start", width: "100%" }}>
+          <div style={{ display: "flex", flex: 1, flexWrap: "wrap", rowGap: 16 }}>
+            <Form.Item label="아이디" name="loginId">
+              <Input allowClear />
+            </Form.Item>
+            <Form.Item label="이름" name="name">
+              <Input allowClear />
+            </Form.Item>
+            <Form.Item label="이메일" name="email">
+              <Input allowClear />
+            </Form.Item>
+            <Form.Item label="권한" name="role">
+              <Select
+                allowClear
+                style={{ width: 120 }}
+                options={[
+                  { value: "관리자", label: "관리자" },
+                  { value: "일반 사용자", label: "일반 사용자" },
+                ]}
+              />
+            </Form.Item>
+            <Form.Item label="상태" name="status">
+              <Select
+                allowClear
+                style={{ width: 120 }}
+                options={[
+                  { value: "사용", label: "사용" },
+                  { value: "미사용", label: "미사용" },
+                ]}
+              />
+            </Form.Item>
+          </div>
+          <Form.Item style={{ flexShrink: 0, marginRight: 0 }}>
+            <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
+              조회
+            </Button>
+          </Form.Item>
+        </div>
+      </Form>
+
+      <div style={{ flex: 1, minHeight: 0 }}>
+        <AgGridReact
+          modules={modules}
+          rowData={filteredRowData}
+          columnDefs={columnDefs}
+          defaultColDef={defaultColDef}
+          getRowId={({ data }) => data.id}
+          pagination
+          paginationPageSize={20}
+          paginationPageSizeSelector={[10, 20, 50]}
+        />
+      </div>
     </div>
   );
 }
