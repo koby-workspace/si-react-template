@@ -22,7 +22,6 @@ function MenusPage() {
   const [messageApi, contextHolder] = message.useMessage();
 
   const loadMenus = useCallback(async () => {
-    setLoading(true);
     try {
       const nextMenus = await menuApi.getMenus();
       setMenus(nextMenus);
@@ -37,21 +36,10 @@ function MenusPage() {
   }, [messageApi]);
 
   useEffect(() => {
-    let active = true;
-    menuApi.getMenus()
-      .then((nextMenus) => {
-        if (active) setMenus(nextMenus);
-      })
-      .catch(() => {
-        if (active) messageApi.error("메뉴 목록을 불러오지 못했습니다.");
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [messageApi]);
+    // API 응답 이후에만 상태를 갱신하는 비동기 조회입니다.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadMenus();
+  }, [loadMenus]);
 
   const tableData = useMemo(() => buildMenuTree(menus), [menus]);
   const parentOptions = useMemo(
@@ -88,6 +76,7 @@ function MenusPage() {
         messageApi.success("메뉴를 추가했습니다.");
       }
       setEditingMenu(undefined);
+      setLoading(true);
       await loadMenus();
     } catch (error) {
       messageApi.error(error.message || "메뉴를 저장하지 못했습니다.");
@@ -98,6 +87,7 @@ function MenusPage() {
     try {
       await menuApi.deleteMenu(selectedMenu.id);
       setSelectedMenu(null);
+      setLoading(true);
       await loadMenus();
       messageApi.success("메뉴를 삭제했습니다.");
     } catch (error) {
@@ -190,4 +180,3 @@ function MenusPage() {
 }
 
 export default MenusPage;
-

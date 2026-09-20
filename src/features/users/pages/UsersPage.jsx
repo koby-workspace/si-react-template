@@ -44,8 +44,6 @@ function UsersPage() {
 
   const loadUsers = useCallback(
     async (params) => {
-      setLoading(true);
-
       try {
         const data = await userApi.getUsers(params);
         setUsers(data);
@@ -60,30 +58,10 @@ function UsersPage() {
   );
 
   useEffect(() => {
-    let active = true;
-
-    userApi
-      .getUsers({})
-      .then((data) => {
-        if (active) {
-          setUsers(data);
-        }
-      })
-      .catch(() => {
-        if (active) {
-          messageApi.error("사용자 목록을 불러오지 못했습니다.");
-        }
-      })
-      .finally(() => {
-        if (active) {
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [messageApi]);
+    // API 응답 이후에만 상태를 갱신하는 비동기 조회입니다.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadUsers({});
+  }, [loadUsers]);
 
   useEffect(() => {
     userGroupApi
@@ -127,12 +105,14 @@ function UsersPage() {
 
   const handleSearch = async (values) => {
     setSearchValues(values);
+    setLoading(true);
     await loadUsers(values);
   };
 
   const handleAdd = async (values) => {
     try {
       await userApi.createUser(values);
+      setLoading(true);
       await loadUsers(searchValues);
       setIsAddModalOpen(false);
       messageApi.success("사용자를 추가했습니다.");
@@ -146,6 +126,7 @@ function UsersPage() {
   const handleEdit = async (values) => {
     try {
       await userApi.updateUser(editingUser.id, values);
+      setLoading(true);
       await loadUsers(searchValues);
       setEditingUser(null);
       messageApi.success("사용자 정보를 수정했습니다.");
@@ -161,6 +142,7 @@ function UsersPage() {
 
     try {
       await userApi.deleteUsers(ids);
+      setLoading(true);
       await loadUsers(searchValues);
       messageApi.success(`${ids.length}명의 사용자를 삭제했습니다.`);
     } catch {

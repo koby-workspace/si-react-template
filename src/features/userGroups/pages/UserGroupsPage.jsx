@@ -21,7 +21,6 @@ function UserGroupsPage() {
   const [messageApi, contextHolder] = message.useMessage();
 
   const loadData = useCallback(async () => {
-    setLoading(true);
     try {
       const [nextGroups, nextUsers] = await Promise.all([
         userGroupApi.getUserGroups(),
@@ -40,30 +39,10 @@ function UserGroupsPage() {
   }, [messageApi]);
 
   useEffect(() => {
-    let active = true;
-
-    Promise.all([userGroupApi.getUserGroups(), userApi.getUsers({})])
-      .then(([nextGroups, nextUsers]) => {
-        if (active) {
-          setGroups(nextGroups);
-          setUsers(nextUsers);
-        }
-      })
-      .catch(() => {
-        if (active) {
-          messageApi.error("사용자 그룹 정보를 불러오지 못했습니다.");
-        }
-      })
-      .finally(() => {
-        if (active) {
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [messageApi]);
+    // API 응답 이후에만 상태를 갱신하는 비동기 조회입니다.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadData();
+  }, [loadData]);
 
   const openCreateModal = () => {
     setEditingGroup(null);
@@ -86,6 +65,7 @@ function UserGroupsPage() {
         messageApi.success("사용자 그룹을 추가했습니다.");
       }
       setEditingGroup(undefined);
+      setLoading(true);
       await loadData();
     } catch (error) {
       messageApi.error(error.message || "사용자 그룹을 저장하지 못했습니다.");
@@ -96,6 +76,7 @@ function UserGroupsPage() {
     try {
       await userGroupApi.deleteUserGroup(selectedGroup.id);
       setSelectedGroup(null);
+      setLoading(true);
       await loadData();
       messageApi.success("사용자 그룹을 삭제했습니다.");
     } catch (error) {
@@ -114,6 +95,7 @@ function UserGroupsPage() {
     try {
       await userGroupApi.updateGroupUsers(selectedGroup.id, mappedUserIds);
       setMappingOpen(false);
+      setLoading(true);
       await loadData();
       messageApi.success("소속 사용자를 저장했습니다.");
     } catch {

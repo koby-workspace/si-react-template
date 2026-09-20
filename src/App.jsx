@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
-import { Button, Layout, Menu } from "antd";
+import { Button, Layout, Menu, message } from "antd";
 import { Link, useLocation } from "react-router";
 import AppRoutes from "./routes/AppRoutes.jsx";
 import AppErrorBoundary from "./components/feedback/AppErrorBoundary.jsx";
@@ -33,14 +33,19 @@ function buildMenuItems(menus, parentId = null) {
 function App() {
   const [showSidebar, setShowSidebar] = useState(true);
   const [menus, setMenus] = useState([]);
+  const [messageApi, contextHolder] = message.useMessage();
   const location = useLocation();
 
   useEffect(() => {
     let active = true;
-    const syncMenus = () => {
-      getMenus().then((nextMenus) => {
+
+    const syncMenus = async () => {
+      try {
+        const nextMenus = await getMenus();
         if (active) setMenus(nextMenus);
-      });
+      } catch {
+        if (active) messageApi.error("메뉴 목록을 불러오지 못했습니다.");
+      }
     };
 
     syncMenus();
@@ -49,12 +54,13 @@ function App() {
       active = false;
       window.removeEventListener(MENUS_CHANGED_EVENT, syncMenus);
     };
-  }, []);
+  }, [messageApi]);
 
   const menuItems = buildMenuItems(menus);
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
+      {contextHolder}
       <Header
         style={{
           color: "#ffffff",
