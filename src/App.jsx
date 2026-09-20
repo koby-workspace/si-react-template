@@ -8,6 +8,7 @@ const { Header, Sider, Content } = Layout;
 const menuItems = [
   { key: "/dashboard", label: "대시보드" },
   { key: "/users", label: "사용자 관리" },
+  { key: "/user-groups", label: "사용자 그룹" },
 ];
 
 function App() {

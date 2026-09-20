@@ -1,11 +1,17 @@
 import httpClient from "../../../api/httpClient.js";
 import * as mockUserApi from "./mockUserApi.js";
+import { getUserGroups as getStoredUserGroups } from "../../userGroups/api/mockUserGroupStore.js";
 
 const useMockApi = import.meta.env.VITE_USE_MOCK_API !== "false";
 
 export async function getUsers(params) {
   if (useMockApi) {
-    return mockUserApi.getUsers(params);
+    const users = await mockUserApi.getUsers(params);
+    const groups = getStoredUserGroups();
+    return users.map((user) => ({
+      ...user,
+      groupName: groups.find((group) => group.id === user.groupId)?.name ?? "-",
+    }));
   }
 
   const response = await httpClient.get("/users", { params });

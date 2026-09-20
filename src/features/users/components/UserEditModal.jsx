@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { Form, Input, Modal, Select } from "antd";
-import { roleOptions, statusOptions } from "../userOptions.js";
+import { statusOptions } from "../userOptions.js";
 
-function UserEditModal({ user, onSave, onCancel }) {
+function UserEditModal({ user, groupOptions, onSave, onCancel }) {
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -58,8 +58,8 @@ function UserEditModal({ user, onSave, onCancel }) {
         >
           <Input maxLength={100} />
         </Form.Item>
-        <Form.Item label="권한" name="role" rules={[{ required: true }]}>
-          <Select options={roleOptions} />
+        <Form.Item label="사용자 그룹" name="groupId" rules={[{ required: true }]}>
+          <Select options={groupOptions} />
         </Form.Item>
         <Form.Item label="상태" name="status" rules={[{ required: true }]}>
           <Select options={statusOptions} />

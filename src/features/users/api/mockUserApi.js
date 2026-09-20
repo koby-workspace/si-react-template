@@ -10,7 +10,7 @@ let users = Array.from({ length: 45 }, (_, index) => {
     name: userNumber === 1 ? "관리자" : names[index % names.length],
     email:
       userNumber === 1 ? "admin@example.com" : `user${userNumber}@example.com`,
-    role: userNumber === 1 ? "관리자" : "일반 사용자",
+    groupId: userNumber === 1 ? "group-admin" : "group-user",
     status: userNumber % 7 === 0 ? "미사용" : "사용",
     createdAt: `2026-09-${String((index % 20) + 1).padStart(2, "0")}`,
   };
@@ -28,10 +28,10 @@ export async function getUsers(params = {}) {
       !normalizedName || user.name.toLowerCase().includes(normalizedName);
     const matchesEmail =
       !normalizedEmail || user.email.toLowerCase().includes(normalizedEmail);
-    const matchesRole = !params.role || user.role === params.role;
+    const matchesGroup = !params.groupId || user.groupId === params.groupId;
     const matchesStatus = !params.status || user.status === params.status;
 
-    return matchesLoginId && matchesName && matchesEmail && matchesRole && matchesStatus;
+    return matchesLoginId && matchesName && matchesEmail && matchesGroup && matchesStatus;
   });
 }
 
@@ -65,4 +65,21 @@ export async function updateUser(id, values) {
 export async function deleteUsers(ids) {
   const selectedIds = new Set(ids);
   users = users.filter((user) => !selectedIds.has(user.id));
+}
+
+export function getAllUsers() {
+  return users;
+}
+
+export function assignUsersToGroup(groupId, userIds) {
+  const selectedIds = new Set(userIds);
+  users = users.map((user) => {
+    if (user.groupId === groupId && !selectedIds.has(user.id)) {
+      return { ...user, groupId: "group-user" };
+    }
+    if (selectedIds.has(user.id)) {
+      return { ...user, groupId };
+    }
+    return user;
+  });
 }

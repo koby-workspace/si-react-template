@@ -1,7 +1,7 @@
 import { Form, Input, Modal, Select } from "antd";
-import { roleOptions, statusOptions } from "../userOptions.js";
+import { statusOptions } from "../userOptions.js";
 
-function UserCreateModal({ open, existingLoginIds, onCreate, onCancel }) {
+function UserCreateModal({ open, existingLoginIds, groupOptions, onCreate, onCancel }) {
   const [form] = Form.useForm();
 
   const handleOk = async () => {
@@ -36,7 +36,7 @@ function UserCreateModal({ open, existingLoginIds, onCreate, onCancel }) {
       <Form
         form={form}
         layout="vertical"
-        initialValues={{ role: "일반 사용자", status: "사용" }}
+        initialValues={{ groupId: "group-user", status: "사용" }}
       >
         <Form.Item
           label="아이디"
@@ -97,8 +97,8 @@ function UserCreateModal({ open, existingLoginIds, onCreate, onCancel }) {
         >
           <Input.Password maxLength={50} />
         </Form.Item>
-        <Form.Item label="권한" name="role" rules={[{ required: true }]}>
-          <Select options={roleOptions} />
+        <Form.Item label="사용자 그룹" name="groupId" rules={[{ required: true }]}>
+          <Select options={groupOptions} />
         </Form.Item>
         <Form.Item label="상태" name="status" rules={[{ required: true }]}>
           <Select options={statusOptions} />

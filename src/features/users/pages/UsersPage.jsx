@@ -18,7 +18,8 @@ import { AgGridReact } from "ag-grid-react";
 import UserCreateModal from "../components/UserCreateModal.jsx";
 import UserEditModal from "../components/UserEditModal.jsx";
 import * as userApi from "../api/userApi.js";
-import { roleOptions, statusOptions } from "../userOptions.js";
+import * as userGroupApi from "../../userGroups/api/userGroupApi.js";
+import { statusOptions } from "../userOptions.js";
 
 const modules = [AllCommunityModule];
 
@@ -26,7 +27,7 @@ const userColumnDefs = [
   { field: "loginId", headerName: "아이디" },
   { field: "name", headerName: "이름" },
   { field: "email", headerName: "이메일", flex: 2 },
-  { field: "role", headerName: "권한" },
+  { field: "groupName", headerName: "사용자 그룹" },
   { field: "status", headerName: "상태" },
   { field: "createdAt", headerName: "등록일" },
 ];
@@ -41,6 +42,7 @@ const defaultColDef = {
 
 function UsersPage() {
   const [users, setUsers] = useState([]);
+  const [userGroups, setUserGroups] = useState([]);
   const [searchValues, setSearchValues] = useState({});
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
@@ -90,6 +92,17 @@ function UsersPage() {
       active = false;
     };
   }, [messageApi]);
+
+  useEffect(() => {
+    userGroupApi.getUserGroups().then(setUserGroups).catch(() => {
+      messageApi.error("사용자 그룹 목록을 불러오지 못했습니다.");
+    });
+  }, [messageApi]);
+
+  const groupOptions = useMemo(
+    () => userGroups.map(({ id, name }) => ({ value: id, label: name })),
+    [userGroups],
+  );
 
   const columnDefs = useMemo(
     () => [
@@ -187,8 +200,8 @@ function UsersPage() {
             <Form.Item label="이메일" name="email">
               <Input allowClear />
             </Form.Item>
-            <Form.Item label="권한" name="role">
-              <Select allowClear style={{ width: 120 }} options={roleOptions} />
+            <Form.Item label="사용자 그룹" name="groupId">
+              <Select allowClear style={{ width: 140 }} options={groupOptions} />
             </Form.Item>
             <Form.Item label="상태" name="status">
               <Select
@@ -249,11 +262,13 @@ function UsersPage() {
       <UserCreateModal
         open={isAddModalOpen}
         existingLoginIds={existingLoginIds}
+        groupOptions={groupOptions}
         onCreate={handleAdd}
         onCancel={() => setIsAddModalOpen(false)}
       />
       <UserEditModal
         user={editingUser}
+        groupOptions={groupOptions}
         onSave={handleEdit}
         onCancel={() => setEditingUser(null)}
       />
