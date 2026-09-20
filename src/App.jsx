@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import { Button, Layout, Menu } from "antd";
-import { useLocation, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import AppRoutes from "./routes/AppRoutes.jsx";
 
 const { Header, Sider, Content } = Layout;
@@ -32,7 +32,9 @@ function App() {
           onClick={() => setShowSidebar((visible) => !visible)}
           icon={showSidebar ? <MenuFoldOutlined /> : <MenuUnfoldOutlined />}
         />
-        Top
+        <Link to="/dashboard" style={{ color: "inherit" }}>
+          SI React Template
+        </Link>
       </Header>
 
       <Layout>
