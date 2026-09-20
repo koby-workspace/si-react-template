@@ -32,4 +32,3 @@ export function changeUserGroup(id, values) {
 export function removeUserGroup(id) {
   userGroups = userGroups.filter((group) => group.id !== id);
 }
-

@@ -1,20 +1,49 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import { Button, Layout, Menu } from "antd";
 import { Link, useLocation, useNavigate } from "react-router";
 import AppRoutes from "./routes/AppRoutes.jsx";
+import { getMenus, MENUS_CHANGED_EVENT } from "./features/menus/api/menuApi.js";
 
 const { Header, Sider, Content } = Layout;
-const menuItems = [
-  { key: "/dashboard", label: "대시보드" },
-  { key: "/users", label: "사용자 관리" },
-  { key: "/user-groups", label: "사용자 그룹" },
-];
+
+function buildMenuItems(menus, parentId = null) {
+  return menus
+    .filter((menu) => menu.enabled && menu.parentId === parentId)
+    .sort((a, b) => a.order - b.order)
+    .map((menu) => {
+      const children = buildMenuItems(menus, menu.id);
+      return {
+        key: menu.path,
+        label: menu.name,
+        children: children.length ? children : undefined,
+      };
+    });
+}
 
 function App() {
   const [showSidebar, setShowSidebar] = useState(true);
+  const [menus, setMenus] = useState([]);
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let active = true;
+    const syncMenus = () => {
+      getMenus().then((nextMenus) => {
+        if (active) setMenus(nextMenus);
+      });
+    };
+
+    syncMenus();
+    window.addEventListener(MENUS_CHANGED_EVENT, syncMenus);
+    return () => {
+      active = false;
+      window.removeEventListener(MENUS_CHANGED_EVENT, syncMenus);
+    };
+  }, []);
+
+  const menuItems = buildMenuItems(menus);
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
