@@ -3,6 +3,7 @@ import DashboardPage from "../features/dashboard/pages/DashboardPage.jsx";
 import UsersPage from "../features/users/pages/UsersPage.jsx";
 import UserGroupsPage from "../features/userGroups/pages/UserGroupsPage.jsx";
 import MenusPage from "../features/menus/pages/MenusPage.jsx";
+import NotFoundPage from "../pages/NotFoundPage.jsx";
 
 function AppRoutes() {
   return (
@@ -12,6 +13,7 @@ function AppRoutes() {
       <Route path="/users" element={<UsersPage />} />
       <Route path="/user-groups" element={<UserGroupsPage />} />
       <Route path="/menus" element={<MenusPage />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

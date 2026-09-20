@@ -4,15 +4,7 @@ import {
   PlusOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import {
-  Button,
-  Form,
-  Input,
-  message,
-  Popconfirm,
-  Select,
-  Space,
-} from "antd";
+import { Button, Form, Input, message, Popconfirm, Select, Space } from "antd";
 import { AllCommunityModule } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import UserCreateModal from "../components/UserCreateModal.jsx";
@@ -94,9 +86,12 @@ function UsersPage() {
   }, [messageApi]);
 
   useEffect(() => {
-    userGroupApi.getUserGroups().then(setUserGroups).catch(() => {
-      messageApi.error("사용자 그룹 목록을 불러오지 못했습니다.");
-    });
+    userGroupApi
+      .getUserGroups()
+      .then(setUserGroups)
+      .catch(() => {
+        messageApi.error("사용자 그룹 목록을 불러오지 못했습니다.");
+      });
   }, [messageApi]);
 
   const groupOptions = useMemo(
@@ -201,7 +196,11 @@ function UsersPage() {
               <Input allowClear />
             </Form.Item>
             <Form.Item label="사용자 그룹" name="groupId">
-              <Select allowClear style={{ width: 140 }} options={groupOptions} />
+              <Select
+                allowClear
+                style={{ width: 140 }}
+                options={groupOptions}
+              />
             </Form.Item>
             <Form.Item label="상태" name="status">
               <Select
@@ -251,7 +250,9 @@ function UsersPage() {
           getRowId={({ data }) => data.id}
           rowSelection={{ mode: "multiRow", enableClickSelection: false }}
           selectionColumnDef={{ width: 48, resizable: false }}
-          onSelectionChanged={({ api }) => setSelectedUsers(api.getSelectedRows())}
+          onSelectionChanged={({ api }) =>
+            setSelectedUsers(api.getSelectedRows())
+          }
           loading={loading}
           pagination
           paginationPageSize={20}

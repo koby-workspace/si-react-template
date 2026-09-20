@@ -3,6 +3,7 @@ import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import { Button, Layout, Menu } from "antd";
 import { Link, useLocation } from "react-router";
 import AppRoutes from "./routes/AppRoutes.jsx";
+import AppErrorBoundary from "./components/feedback/AppErrorBoundary.jsx";
 import { getMenus, MENUS_CHANGED_EVENT } from "./features/menus/api/menuApi.js";
 
 const { Header, Sider, Content } = Layout;
@@ -86,7 +87,9 @@ function App() {
           </Sider>
         )}
         <Content style={{ overflow: "hidden", padding: 24 }}>
-          <AppRoutes />
+          <AppErrorBoundary resetKey={location.pathname}>
+            <AppRoutes />
+          </AppErrorBoundary>
         </Content>
       </Layout>
     </Layout>
