@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import { Button, Layout, Menu } from "antd";
-import { Link, useLocation, useNavigate } from "react-router";
+import { Link, useLocation } from "react-router";
 import AppRoutes from "./routes/AppRoutes.jsx";
 import { getMenus, MENUS_CHANGED_EVENT } from "./features/menus/api/menuApi.js";
 
@@ -15,7 +15,15 @@ function buildMenuItems(menus, parentId = null) {
       const children = buildMenuItems(menus, menu.id);
       return {
         key: menu.path,
-        label: menu.name,
+        label: (
+          <Link
+            to={menu.path}
+            style={{ color: "inherit" }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            {menu.name}
+          </Link>
+        ),
         children: children.length ? children : undefined,
       };
     });
@@ -25,7 +33,6 @@ function App() {
   const [showSidebar, setShowSidebar] = useState(true);
   const [menus, setMenus] = useState([]);
   const location = useLocation();
-  const navigate = useNavigate();
 
   useEffect(() => {
     let active = true;
@@ -75,7 +82,6 @@ function App() {
               mode="inline"
               selectedKeys={[location.pathname]}
               items={menuItems}
-              onClick={({ key }) => navigate(key)}
             />
           </Sider>
         )}
