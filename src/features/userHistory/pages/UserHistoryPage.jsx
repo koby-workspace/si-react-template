@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { SearchOutlined } from "@ant-design/icons";
+import { DownloadOutlined, SearchOutlined } from "@ant-design/icons";
 import { Button, DatePicker, Descriptions, Drawer, Form, Input, message, Select, Space, Table, Tag } from "antd";
+import { downloadTableCsv } from "../../../utils/downloadCsv.js";
 import * as userHistoryApi from "../api/userHistoryApi.js";
 import { actionLabels, actionOptions, fieldLabels } from "../userHistoryOptions.js";
 
@@ -9,6 +10,14 @@ const actionColors = {
   UPDATE: "blue",
   DELETE: "red",
 };
+
+function getLoginId(history) {
+  return history.entityLoginId ?? history.entityName.split(" (")[0];
+}
+
+function getUserName(history) {
+  return history.entityUserName ?? history.entityName.match(/\((.*)\)$/)?.[1] ?? "";
+}
 
 const columns = [
   {
@@ -27,14 +36,13 @@ const columns = [
     title: "아이디",
     dataIndex: "entityLoginId",
     width: 140,
-    render: (value, record) => value ?? record.entityName.split(" (")[0],
+    render: (_, record) => getLoginId(record),
   },
   {
     title: "이름",
     dataIndex: "entityUserName",
     width: 120,
-    render: (value, record) =>
-      value ?? record.entityName.match(/\((.*)\)$/)?.[1] ?? "-",
+    render: (_, record) => getUserName(record) || "-",
   },
   { title: "작업자", dataIndex: "actor", width: 120 },
   { title: "변경 요약", dataIndex: "summary" },
@@ -70,6 +78,14 @@ function UserHistoryPage() {
     });
   };
 
+  const handleDownload = () => {
+    downloadTableCsv({
+      menuName: "사용자 변경 이력",
+      columns,
+      rows: histories,
+    });
+  };
+
   const detailColumns = [
     { title: "항목", dataIndex: "field", render: (value) => fieldLabels[value] ?? value },
     { title: "변경 전", dataIndex: "before", render: (value) => value ?? "-" },
@@ -99,6 +115,16 @@ function UserHistoryPage() {
           조회
         </Button>
       </Form>
+
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <Button
+          icon={<DownloadOutlined />}
+          disabled={histories.length === 0}
+          onClick={handleDownload}
+        >
+          엑셀 다운로드
+        </Button>
+      </div>
 
       <Table
         rowKey="id"

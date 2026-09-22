@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   DeleteOutlined,
+  DownloadOutlined,
   PlusOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
@@ -12,6 +13,7 @@ import UserEditModal from "../components/UserEditModal.jsx";
 import * as userApi from "../api/userApi.js";
 import * as userGroupApi from "../../userGroups/api/userGroupApi.js";
 import { statusOptions } from "../userOptions.js";
+import { downloadTableCsv } from "../../../utils/downloadCsv.js";
 
 const modules = [AllCommunityModule];
 
@@ -88,6 +90,7 @@ function UsersPage() {
         sortable: false,
         filter: false,
         resizable: false,
+        exportable: false,
         cellRenderer: ({ data }) => (
           <Button size="small" onClick={() => setEditingUser(data)}>
             수정
@@ -150,6 +153,14 @@ function UsersPage() {
     }
   };
 
+  const handleDownload = () => {
+    downloadTableCsv({
+      menuName: "사용자 관리",
+      columns: columnDefs,
+      rows: users,
+    });
+  };
+
   return (
     <div
       style={{
@@ -193,6 +204,13 @@ function UsersPage() {
             </Form.Item>
           </div>
           <Space>
+            <Button
+              icon={<DownloadOutlined />}
+              disabled={users.length === 0}
+              onClick={handleDownload}
+            >
+              엑셀 다운로드
+            </Button>
             <Button
               icon={<PlusOutlined />}
               onClick={() => setIsAddModalOpen(true)}
