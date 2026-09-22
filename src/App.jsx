@@ -124,7 +124,6 @@ function App() {
             itemSelectedBg: "#e6f4ff",
             itemSelectedColor: "#1677ff",
           },
-          Table: { borderRadius: 10 },
         },
       }}
     >

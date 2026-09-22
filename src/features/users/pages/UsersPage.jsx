@@ -5,8 +5,6 @@ import {
   PlusOutlined,
 } from "@ant-design/icons";
 import { Button, Form, Input, message, Popconfirm, Select } from "antd";
-import { AllCommunityModule } from "ag-grid-community";
-import { AgGridReact } from "ag-grid-react";
 import UserCreateModal from "../components/UserCreateModal.jsx";
 import UserEditModal from "../components/UserEditModal.jsx";
 import * as userApi from "../api/userApi.js";
@@ -14,8 +12,7 @@ import * as userGroupApi from "../../userGroups/api/userGroupApi.js";
 import { statusOptions } from "../userOptions.js";
 import { downloadTableCsv } from "../../../utils/downloadCsv.js";
 import PageToolbar from "../../../components/layout/PageToolbar.jsx";
-
-const modules = [AllCommunityModule];
+import AppDataGrid from "../../../components/data/AppDataGrid.jsx";
 
 const userColumnDefs = [
   { field: "loginId", headerName: "아이디" },
@@ -25,14 +22,6 @@ const userColumnDefs = [
   { field: "status", headerName: "상태" },
   { field: "createdAt", headerName: "등록일" },
 ];
-
-const defaultColDef = {
-  flex: 1,
-  minWidth: 120,
-  sortable: true,
-  filter: true,
-  resizable: true,
-};
 
 function UsersPage() {
   const [users, setUsers] = useState([]);
@@ -228,12 +217,10 @@ function UsersPage() {
       </PageToolbar>
 
       <div style={{ flex: 1, minHeight: 0 }}>
-        <AgGridReact
-          modules={modules}
+        <AppDataGrid
+          fill
           rowData={users}
           columnDefs={columnDefs}
-          defaultColDef={defaultColDef}
-          getRowId={({ data }) => data.id}
           rowSelection={{ mode: "multiRow", enableClickSelection: false }}
           selectionColumnDef={{ width: 48, resizable: false }}
           onSelectionChanged={({ api }) =>

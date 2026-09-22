@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { DeleteOutlined, EditOutlined, PlusOutlined, UserAddOutlined } from "@ant-design/icons";
-import { Button, Form, Input, message, Modal, Popconfirm, Select, Space, Table, Transfer } from "antd";
+import { Button, Form, Input, message, Modal, Popconfirm, Select, Transfer } from "antd";
 import * as userGroupApi from "../api/userGroupApi.js";
 import * as userApi from "../../users/api/userApi.js";
 import PageToolbar from "../../../components/layout/PageToolbar.jsx";
+import AppDataGrid from "../../../components/data/AppDataGrid.jsx";
 
 const statusOptions = [
   { value: "사용", label: "사용" },
@@ -104,11 +105,11 @@ function UserGroupsPage() {
     }
   };
 
-  const columns = [
-    { title: "그룹명", dataIndex: "name" },
-    { title: "설명", dataIndex: "description" },
-    { title: "사용자 수", dataIndex: "userCount", width: 110 },
-    { title: "상태", dataIndex: "status", width: 100 },
+  const columnDefs = [
+    { headerName: "그룹명", field: "name" },
+    { headerName: "설명", field: "description", flex: 2 },
+    { headerName: "사용자 수", field: "userCount", width: 110, flex: 0 },
+    { headerName: "상태", field: "status", width: 100, flex: 0 },
   ];
 
   const mappedUsers = selectedGroup
@@ -116,7 +117,7 @@ function UserGroupsPage() {
     : [];
 
   return (
-    <Space direction="vertical" size="middle" style={{ display: "flex" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 16, height: "100%", minHeight: 0 }}>
       {contextHolder}
       <PageToolbar
         actions={[
@@ -147,34 +148,38 @@ function UserGroupsPage() {
         ]}
       />
 
-      <Table
-        rowKey="id"
-        columns={columns}
-        dataSource={groups}
-        loading={loading}
-        pagination={false}
-        rowSelection={{
-          type: "radio",
-          selectedRowKeys: selectedGroup ? [selectedGroup.id] : [],
-          onChange: (_, rows) => setSelectedGroup(rows[0] ?? null),
-        }}
-        onRow={(record) => ({ onClick: () => setSelectedGroup(record) })}
-      />
-
-      {selectedGroup && (
-        <Table
-          rowKey="id"
-          size="small"
-          title={() => `${selectedGroup.name} 소속 사용자`}
-          columns={[
-            { title: "아이디", dataIndex: "loginId" },
-            { title: "이름", dataIndex: "name" },
-            { title: "이메일", dataIndex: "email" },
-          ]}
-          dataSource={mappedUsers}
-          pagination={{ pageSize: 5 }}
+      <div style={{ display: "flex", flex: 1, minHeight: 0, gap: 16 }}>
+        <AppDataGrid
+          fill
+          columnDefs={columnDefs}
+          rowData={groups}
+          loading={loading}
+          rowSelection={{
+            mode: "singleRow",
+            enableClickSelection: true,
+          }}
+          selectionColumnDef={{ width: 48, resizable: false }}
+          onSelectionChanged={({ api }) => setSelectedGroup(api.getSelectedRows()[0] ?? null)}
         />
-      )}
+
+        {selectedGroup && (
+          <div style={{ display: "flex", flex: 1, minWidth: 0, minHeight: 0, flexDirection: "column", gap: 8 }}>
+            <strong>{selectedGroup.name} 소속 사용자</strong>
+            <AppDataGrid
+              fill
+              columnDefs={[
+                { headerName: "아이디", field: "loginId" },
+                { headerName: "이름", field: "name" },
+                { headerName: "이메일", field: "email", flex: 2 },
+              ]}
+              rowData={mappedUsers}
+              pagination
+              paginationPageSize={5}
+              paginationPageSizeSelector={[5, 10, 20]}
+            />
+          </div>
+        )}
+      </div>
 
       <Modal
         title={editingGroup ? "사용자 그룹 수정" : "사용자 그룹 추가"}
@@ -221,7 +226,7 @@ function UserGroupsPage() {
           listStyle={{ width: 300, height: 360 }}
         />
       </Modal>
-    </Space>
+    </div>
   );
 }
 

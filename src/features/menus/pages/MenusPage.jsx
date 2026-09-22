@@ -1,17 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Form, Input, InputNumber, message, Modal, Popconfirm, Select, Space, Table } from "antd";
+import { Button, Form, Input, InputNumber, message, Modal, Popconfirm, Select } from "antd";
 import * as menuApi from "../api/menuApi.js";
 import PageToolbar from "../../../components/layout/PageToolbar.jsx";
+import AppDataGrid from "../../../components/data/AppDataGrid.jsx";
 
-function buildMenuTree(menus, parentId = null) {
+function buildMenuRows(menus, parentId = null, depth = 0) {
   return menus
     .filter((menu) => menu.parentId === parentId)
     .sort((a, b) => a.order - b.order)
-    .map((menu) => {
-      const children = buildMenuTree(menus, menu.id);
-      return { ...menu, children: children.length ? children : undefined };
-    });
+    .flatMap((menu) => [
+      { ...menu, depth },
+      ...buildMenuRows(menus, menu.id, depth + 1),
+    ]);
 }
 
 function MenusPage() {
@@ -42,7 +43,7 @@ function MenusPage() {
     loadMenus();
   }, [loadMenus]);
 
-  const tableData = useMemo(() => buildMenuTree(menus), [menus]);
+  const tableData = useMemo(() => buildMenuRows(menus), [menus]);
   const parentOptions = useMemo(
     () => menus
       .filter(({ id }) => id !== editingMenu?.id)
@@ -96,20 +97,29 @@ function MenusPage() {
     }
   };
 
-  const columns = [
-    { title: "메뉴명", dataIndex: "name" },
-    { title: "경로", dataIndex: "path" },
-    { title: "표시 순서", dataIndex: "order", width: 110 },
+  const columnDefs = [
     {
-      title: "사용 여부",
-      dataIndex: "enabled",
+      headerName: "메뉴명",
+      field: "name",
+      cellRenderer: ({ data, value }) => (
+        <span style={{ paddingInlineStart: data.depth * 20 }}>
+          {data.depth > 0 && "└ "}{value}
+        </span>
+      ),
+    },
+    { headerName: "경로", field: "path" },
+    { headerName: "표시 순서", field: "order", width: 110, flex: 0 },
+    {
+      headerName: "사용 여부",
+      field: "enabled",
       width: 110,
-      render: (enabled) => (enabled ? "사용" : "미사용"),
+      flex: 0,
+      valueFormatter: ({ value }) => (value ? "사용" : "미사용"),
     },
   ];
 
   return (
-    <Space direction="vertical" size="middle" style={{ display: "flex" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 16, height: "100%", minHeight: 0 }}>
       {contextHolder}
       <PageToolbar
         actions={[
@@ -131,19 +141,17 @@ function MenusPage() {
         ]}
       />
 
-      <Table
-        rowKey="id"
-        columns={columns}
-        dataSource={tableData}
+      <AppDataGrid
+        fill
+        columnDefs={columnDefs}
+        rowData={tableData}
         loading={loading}
-        pagination={false}
-        defaultExpandAllRows
         rowSelection={{
-          type: "radio",
-          selectedRowKeys: selectedMenu ? [selectedMenu.id] : [],
-          onChange: (_, rows) => setSelectedMenu(rows[0] ?? null),
+          mode: "singleRow",
+          enableClickSelection: true,
         }}
-        onRow={(record) => ({ onClick: () => setSelectedMenu(record) })}
+        selectionColumnDef={{ width: 48, resizable: false }}
+        onSelectionChanged={({ api }) => setSelectedMenu(api.getSelectedRows()[0] ?? null)}
       />
 
       <Modal
@@ -183,7 +191,7 @@ function MenusPage() {
           </Form.Item>
         </Form>
       </Modal>
-    </Space>
+    </div>
   );
 }
 

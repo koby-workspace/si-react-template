@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { DownloadOutlined } from "@ant-design/icons";
-import { Button, DatePicker, Descriptions, Drawer, Form, Input, message, Select, Space, Table, Tag } from "antd";
+import { Button, DatePicker, Descriptions, Drawer, Form, Input, message, Select, Space, Tag } from "antd";
 import { downloadTableCsv } from "../../../utils/downloadCsv.js";
 import * as userHistoryApi from "../api/userHistoryApi.js";
 import { actionLabels, actionOptions, fieldLabels } from "../userHistoryOptions.js";
 import PageToolbar from "../../../components/layout/PageToolbar.jsx";
+import AppDataGrid from "../../../components/data/AppDataGrid.jsx";
 
 const actionColors = {
   CREATE: "green",
@@ -12,31 +13,35 @@ const actionColors = {
   DELETE: "red",
 };
 
-const columns = [
+const columnDefs = [
   {
-    title: "작업 일시",
-    dataIndex: "occurredAt",
+    headerName: "작업 일시",
+    field: "occurredAt",
     width: 180,
-    render: (value) => new Date(value).toLocaleString("ko-KR"),
+    flex: 0,
+    valueFormatter: ({ value }) => new Date(value).toLocaleString("ko-KR"),
   },
   {
-    title: "구분",
-    dataIndex: "action",
+    headerName: "구분",
+    field: "action",
     width: 90,
-    render: (value) => <Tag color={actionColors[value]}>{actionLabels[value]}</Tag>,
+    flex: 0,
+    cellRenderer: ({ value }) => <Tag color={actionColors[value]}>{actionLabels[value]}</Tag>,
   },
   {
-    title: "아이디",
-    dataIndex: "entityLoginId",
+    headerName: "아이디",
+    field: "entityLoginId",
     width: 140,
+    flex: 0,
   },
   {
-    title: "이름",
-    dataIndex: "entityUserName",
+    headerName: "이름",
+    field: "entityUserName",
     width: 120,
+    flex: 0,
   },
-  { title: "작업자", dataIndex: "actor", width: 120 },
-  { title: "변경 요약", dataIndex: "summary" },
+  { headerName: "작업자", field: "actor", width: 120, flex: 0 },
+  { headerName: "변경 요약", field: "summary" },
 ];
 
 function UserHistoryPage() {
@@ -72,19 +77,19 @@ function UserHistoryPage() {
   const handleDownload = () => {
     downloadTableCsv({
       menuName: "사용자 변경 이력",
-      columns,
+      columns: columnDefs,
       rows: histories,
     });
   };
 
-  const detailColumns = [
-    { title: "항목", dataIndex: "field", render: (value) => fieldLabels[value] ?? value },
-    { title: "변경 전", dataIndex: "before", render: (value) => value ?? "-" },
-    { title: "변경 후", dataIndex: "after", render: (value) => value ?? "-" },
+  const detailColumnDefs = [
+    { headerName: "항목", field: "field", valueFormatter: ({ value }) => fieldLabels[value] ?? value },
+    { headerName: "변경 전", field: "before", valueFormatter: ({ value }) => value ?? "-" },
+    { headerName: "변경 후", field: "after", valueFormatter: ({ value }) => value ?? "-" },
   ];
 
   return (
-    <Space direction="vertical" size="middle" style={{ display: "flex" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 16, height: "100%", minHeight: 0 }}>
       {contextHolder}
       <PageToolbar
         onSearch={handleSearch}
@@ -116,14 +121,15 @@ function UserHistoryPage() {
         </Form.Item>
       </PageToolbar>
 
-      <Table
-        rowKey="id"
-        columns={columns}
-        dataSource={histories}
+      <AppDataGrid
+        fill
+        columnDefs={columnDefs}
+        rowData={histories}
         loading={loading}
-        pagination={{ pageSize: 20 }}
-        locale={{ emptyText: "사용자 변경 이력이 없습니다." }}
-        onRow={(record) => ({ onClick: () => setSelectedHistory(record) })}
+        pagination
+        paginationPageSize={20}
+        paginationPageSizeSelector={[10, 20, 50]}
+        onRowClicked={({ data }) => setSelectedHistory(data)}
       />
 
       <Drawer
@@ -151,17 +157,15 @@ function UserHistoryPage() {
                 {selectedHistory.actor}
               </Descriptions.Item>
             </Descriptions>
-            <Table
-              rowKey="field"
-              size="small"
-              columns={detailColumns}
-              dataSource={selectedHistory.changes}
-              pagination={false}
+            <AppDataGrid
+              getRowId={({ data }) => data.field}
+              columnDefs={detailColumnDefs}
+              rowData={selectedHistory.changes}
             />
           </Space>
         )}
       </Drawer>
-    </Space>
+    </div>
   );
 }
 

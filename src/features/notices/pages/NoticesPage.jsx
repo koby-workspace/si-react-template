@@ -1,31 +1,33 @@
 import { useEffect, useState } from "react";
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Checkbox, Form, Input, message, Modal, Popconfirm, Table, Tag } from "antd";
+import { Button, Checkbox, Form, Input, message, Modal, Popconfirm, Tag } from "antd";
 import { Link } from "react-router";
 import PageToolbar from "../../../components/layout/PageToolbar.jsx";
 import { createNotice, deleteNotice, getNotices, updateNotice } from "../api/noticeApi.js";
+import AppDataGrid from "../../../components/data/AppDataGrid.jsx";
 
-const columns = [
+const columnDefs = [
   {
-    title: "확인",
-    dataIndex: "read",
+    headerName: "확인",
+    field: "read",
     width: 100,
-    render: (read) => read
+    flex: 0,
+    cellRenderer: ({ value }) => value
       ? <Tag>읽음</Tag>
       : <Tag color="blue">안 읽음</Tag>,
   },
   {
-    title: "제목",
-    dataIndex: "title",
-    render: (title, notice) => (
+    headerName: "제목",
+    field: "title",
+    cellRenderer: ({ data: notice, value: title }) => (
       <Link to={`/notices/${notice.id}`}>
         {notice.important && <Tag color="red">중요</Tag>}
         <span style={{ fontWeight: notice.read ? "normal" : 600 }}>{title}</span>
       </Link>
     ),
   },
-  { title: "작성자", dataIndex: "author", width: 120 },
-  { title: "등록일", dataIndex: "createdAt", width: 140 },
+  { headerName: "작성자", field: "author", width: 120, flex: 0 },
+  { headerName: "등록일", field: "createdAt", width: 140, flex: 0 },
 ];
 
 function NoticesPage() {
@@ -87,7 +89,7 @@ function NoticesPage() {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 16, height: "100%", minHeight: 0 }}>
       {contextHolder}
       <PageToolbar
         onSearch={loadNotices}
@@ -111,16 +113,20 @@ function NoticesPage() {
           <Input allowClear placeholder="제목 또는 내용" style={{ width: 240 }} />
         </Form.Item>
       </PageToolbar>
-      <Table
-        rowKey="id"
-        columns={columns}
-        dataSource={notices}
+      <AppDataGrid
+        fill
+        columnDefs={columnDefs}
+        rowData={notices}
         loading={loading}
         rowSelection={{
-          type: "radio",
-          selectedRowKeys: selectedNotice ? [selectedNotice.id] : [],
-          onChange: (_, rows) => setSelectedNotice(rows[0] ?? null),
+          mode: "singleRow",
+          enableClickSelection: true,
         }}
+        selectionColumnDef={{ width: 48, resizable: false }}
+        onSelectionChanged={({ api }) => setSelectedNotice(api.getSelectedRows()[0] ?? null)}
+        pagination
+        paginationPageSize={10}
+        paginationPageSizeSelector={[10, 20, 50]}
       />
 
       <Modal
