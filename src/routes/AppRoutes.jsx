@@ -5,6 +5,9 @@ import UserHistoryPage from "../features/userHistory/pages/UserHistoryPage.jsx";
 import UserGroupsPage from "../features/userGroups/pages/UserGroupsPage.jsx";
 import MenusPage from "../features/menus/pages/MenusPage.jsx";
 import NotFoundPage from "../pages/NotFoundPage.jsx";
+import NoticesPage from "../features/notices/pages/NoticesPage.jsx";
+import NoticeDetailPage from "../features/notices/pages/NoticeDetailPage.jsx";
+import NotificationsPage from "../features/notifications/pages/NotificationsPage.jsx";
 
 function AppRoutes() {
   return (
@@ -15,6 +18,9 @@ function AppRoutes() {
       <Route path="/user-history" element={<UserHistoryPage />} />
       <Route path="/user-groups" element={<UserGroupsPage />} />
       <Route path="/menus" element={<MenusPage />} />
+      <Route path="/notices" element={<NoticesPage />} />
+      <Route path="/notices/:noticeId" element={<NoticeDetailPage />} />
+      <Route path="/notifications" element={<NotificationsPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

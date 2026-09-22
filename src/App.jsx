@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
-import { Button, Layout, Menu, message } from "antd";
-import { Link, useLocation } from "react-router";
+import { BellOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
+import { Badge, Button, Layout, Menu, message, Tooltip } from "antd";
+import { Link, useLocation, useNavigate } from "react-router";
 import AppRoutes from "./routes/AppRoutes.jsx";
 import AppErrorBoundary from "./components/feedback/AppErrorBoundary.jsx";
 import { getMenus, MENUS_CHANGED_EVENT } from "./features/menus/api/menuApi.js";
+import { getUnreadNotificationCount, NOTIFICATIONS_CHANGED_EVENT } from "./features/notifications/api/notificationApi.js";
 
 const { Header, Sider, Content } = Layout;
 
@@ -35,8 +36,10 @@ function buildMenuItems(menus, parentId = null) {
 function App() {
   const [showSidebar, setShowSidebar] = useState(true);
   const [menus, setMenus] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [messageApi, contextHolder] = message.useMessage();
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     let active = true;
@@ -57,6 +60,13 @@ function App() {
       window.removeEventListener(MENUS_CHANGED_EVENT, syncMenus);
     };
   }, [messageApi]);
+
+  useEffect(() => {
+    const syncUnreadCount = () => getUnreadNotificationCount().then(setUnreadCount);
+    syncUnreadCount();
+    window.addEventListener(NOTIFICATIONS_CHANGED_EVENT, syncUnreadCount);
+    return () => window.removeEventListener(NOTIFICATIONS_CHANGED_EVENT, syncUnreadCount);
+  }, []);
 
   const menuItems = buildMenuItems(menus);
 
@@ -81,6 +91,18 @@ function App() {
         <Link to="/dashboard" style={{ color: "inherit" }}>
           SI React Template
         </Link>
+        <div style={{ marginLeft: "auto" }}>
+          <Tooltip title="알림">
+            <Badge count={unreadCount} size="small" overflowCount={99} style={{ boxShadow: "none" }}>
+              <Button
+                type="text"
+                aria-label={`알림 ${unreadCount}건`}
+                icon={<BellOutlined style={{ color: "#ffffff", fontSize: 20 }} />}
+                onClick={() => navigate("/notifications")}
+              />
+            </Badge>
+          </Tooltip>
+        </div>
       </Header>
 
       <Layout>
