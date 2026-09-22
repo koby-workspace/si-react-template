@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Checkbox, Form, Input, message, Modal, Popconfirm, Table, Tag, Typography } from "antd";
+import { Button, Checkbox, Form, Input, message, Modal, Popconfirm, Table, Tag } from "antd";
 import { Link } from "react-router";
 import PageToolbar from "../../../components/layout/PageToolbar.jsx";
 import { createNotice, deleteNotice, getNotices, updateNotice } from "../api/noticeApi.js";
@@ -89,7 +89,6 @@ function NoticesPage() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {contextHolder}
-      <Typography.Title level={2} style={{ margin: 0 }}>공지사항</Typography.Title>
       <PageToolbar
         onSearch={loadNotices}
         actions={[

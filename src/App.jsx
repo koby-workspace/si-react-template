@@ -4,6 +4,7 @@ import { Badge, Button, Layout, Menu, message, Tooltip } from "antd";
 import { Link, useLocation, useNavigate } from "react-router";
 import AppRoutes from "./routes/AppRoutes.jsx";
 import AppErrorBoundary from "./components/feedback/AppErrorBoundary.jsx";
+import CurrentMenuPath from "./components/layout/CurrentMenuPath.jsx";
 import { getMenus, MENUS_CHANGED_EVENT } from "./features/menus/api/menuApi.js";
 import { getUnreadNotificationCount, NOTIFICATIONS_CHANGED_EVENT } from "./features/notifications/api/notificationApi.js";
 
@@ -116,10 +117,15 @@ function App() {
             />
           </Sider>
         )}
-        <Content style={{ overflow: "hidden", padding: 24 }}>
-          <AppErrorBoundary resetKey={location.pathname}>
-            <AppRoutes />
-          </AppErrorBoundary>
+        <Content style={{ overflow: "hidden", display: "flex", flexDirection: "column" }}>
+          <div style={{ flex: 1, minHeight: 0, padding: 24, display: "flex", flexDirection: "column", gap: 16 }}>
+            <CurrentMenuPath menus={menus} pathname={location.pathname} />
+            <div style={{ flex: 1, minHeight: 0 }}>
+              <AppErrorBoundary resetKey={location.pathname}>
+                <AppRoutes />
+              </AppErrorBoundary>
+            </div>
+          </div>
         </Content>
       </Layout>
     </Layout>

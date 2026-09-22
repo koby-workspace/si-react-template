@@ -26,7 +26,6 @@ function NoticeDetailPage() {
 
   return (
     <Space direction="vertical" size="middle" style={{ display: "flex" }}>
-      <Typography.Title level={2} style={{ margin: 0 }}>공지사항 상세</Typography.Title>
       <Card
         title={<>{notice.important && <Tag color="red">중요</Tag>}{notice.title}</>}
       >

@@ -1,4 +1,4 @@
-import { Button, List, Space, Tag, Typography } from "antd";
+import { Button, List, Space, Tag } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { getNotifications, markAllNotificationsAsRead, markNotificationAsRead } from "../api/notificationApi.js";
@@ -24,8 +24,7 @@ function NotificationsPage() {
 
   return (
     <Space direction="vertical" size="middle" style={{ display: "flex" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <Typography.Title level={2} style={{ margin: 0 }}>알림</Typography.Title>
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
         <Button disabled={notifications.every(({ read }) => read)} onClick={markAllAsRead}>모두 읽음</Button>
       </div>
       <List
