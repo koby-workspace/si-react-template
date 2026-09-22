@@ -82,22 +82,22 @@ function App() {
   const menuItems = buildMenuItems(menus);
   const colors = darkMode
     ? {
-        header: "#111827",
-        sider: "#111827",
-        content: "#0f172a",
-        border: "#263244",
-        text: "#f8fafc",
-        logo: "#818cf8",
-        shadow: "0 2px 12px rgba(0, 0, 0, 0.35)",
+        header: "#141414",
+        sider: "#141414",
+        content: "#0f0f0f",
+        border: "#303030",
+        text: "rgba(255, 255, 255, 0.85)",
+        logo: "#1677ff",
+        shadow: "0 1px 4px rgba(0, 0, 0, 0.24)",
       }
     : {
         header: "#ffffff",
         sider: "#ffffff",
-        content: "#f5f7fb",
-        border: "#e5e7eb",
-        text: "#172033",
-        logo: "#4f46e5",
-        shadow: "0 2px 12px rgba(15, 23, 42, 0.08)",
+        content: "#f5f5f5",
+        border: "#f0f0f0",
+        text: "rgba(0, 0, 0, 0.88)",
+        logo: "#1677ff",
+        shadow: "0 1px 4px rgba(0, 0, 0, 0.06)",
       };
 
   return (
@@ -105,24 +105,24 @@ function App() {
       theme={{
         algorithm: darkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         token: {
-          colorPrimary: "#6366f1",
-          borderRadius: 8,
+          colorPrimary: "#1677ff",
+          borderRadius: 6,
           colorBgLayout: colors.content,
-          colorBgContainer: darkMode ? "#182235" : "#ffffff",
+          colorBgContainer: darkMode ? "#1f1f1f" : "#ffffff",
           colorBorderSecondary: colors.border,
         },
         components: {
           Button: { controlHeight: 34 },
-          Card: { borderRadiusLG: 12 },
+          Card: { borderRadiusLG: 8 },
           Menu: {
             itemBorderRadius: 8,
             itemMarginInline: 10,
             itemMarginBlock: 4,
             darkItemBg: colors.sider,
             darkSubMenuItemBg: colors.sider,
-            darkItemSelectedBg: "#4f46e5",
-            itemSelectedBg: "#eef2ff",
-            itemSelectedColor: "#4338ca",
+            darkItemSelectedBg: "#1668dc",
+            itemSelectedBg: "#e6f4ff",
+            itemSelectedColor: "#1677ff",
           },
           Table: { borderRadius: 10 },
         },
@@ -164,11 +164,10 @@ function App() {
               justifyContent: "center",
               width: 30,
               height: 30,
-              borderRadius: 9,
+              borderRadius: 6,
               color: "#ffffff",
               background: colors.logo,
               fontSize: 12,
-              boxShadow: `0 5px 12px ${darkMode ? "rgba(99, 102, 241, 0.28)" : "rgba(79, 70, 229, 0.22)"}`,
             }}
           >
             SI
