@@ -3,6 +3,7 @@ import { DeleteOutlined, EditOutlined, PlusOutlined, UserAddOutlined } from "@an
 import { Button, Form, Input, message, Modal, Popconfirm, Select, Space, Table, Transfer } from "antd";
 import * as userGroupApi from "../api/userGroupApi.js";
 import * as userApi from "../../users/api/userApi.js";
+import PageToolbar from "../../../components/layout/PageToolbar.jsx";
 
 const statusOptions = [
   { value: "사용", label: "사용" },
@@ -117,26 +118,34 @@ function UserGroupsPage() {
   return (
     <Space direction="vertical" size="middle" style={{ display: "flex" }}>
       {contextHolder}
-      <Space style={{ display: "flex", justifyContent: "flex-end", width: "100%" }}>
-        <Button icon={<PlusOutlined />} onClick={openCreateModal}>그룹 추가</Button>
-        <Button icon={<EditOutlined />} disabled={!selectedGroup} onClick={openEditModal}>수정</Button>
-        <Popconfirm
-          title="사용자 그룹 삭제"
-          description="선택한 사용자 그룹을 삭제하시겠습니까?"
-          disabled={!selectedGroup}
-          onConfirm={deleteGroup}
-        >
-          <Button danger icon={<DeleteOutlined />} disabled={!selectedGroup}>삭제</Button>
-        </Popconfirm>
-        <Button
-          type="primary"
-          icon={<UserAddOutlined />}
-          disabled={!selectedGroup}
-          onClick={openMappingModal}
-        >
-          사용자 매핑
-        </Button>
-      </Space>
+      <PageToolbar
+        actions={[
+          <Button key="add" icon={<PlusOutlined />} onClick={openCreateModal}>
+            그룹 추가
+          </Button>,
+          <Button key="edit" icon={<EditOutlined />} disabled={!selectedGroup} onClick={openEditModal}>
+            수정
+          </Button>,
+          <Popconfirm
+            key="delete"
+            title="사용자 그룹 삭제"
+            description="선택한 사용자 그룹을 삭제하시겠습니까?"
+            disabled={!selectedGroup}
+            onConfirm={deleteGroup}
+          >
+            <Button danger icon={<DeleteOutlined />} disabled={!selectedGroup}>삭제</Button>
+          </Popconfirm>,
+          <Button
+            key="mapping"
+            type="primary"
+            icon={<UserAddOutlined />}
+            disabled={!selectedGroup}
+            onClick={openMappingModal}
+          >
+            사용자 매핑
+          </Button>,
+        ]}
+      />
 
       <Table
         rowKey="id"

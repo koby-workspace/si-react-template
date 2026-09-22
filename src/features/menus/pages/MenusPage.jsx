@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { Button, Form, Input, InputNumber, message, Modal, Popconfirm, Select, Space, Table } from "antd";
 import * as menuApi from "../api/menuApi.js";
+import PageToolbar from "../../../components/layout/PageToolbar.jsx";
 
 function buildMenuTree(menus, parentId = null) {
   return menus
@@ -110,18 +111,25 @@ function MenusPage() {
   return (
     <Space direction="vertical" size="middle" style={{ display: "flex" }}>
       {contextHolder}
-      <Space style={{ display: "flex", justifyContent: "flex-end", width: "100%" }}>
-        <Button icon={<PlusOutlined />} onClick={openCreateModal}>메뉴 추가</Button>
-        <Button icon={<EditOutlined />} disabled={!selectedMenu} onClick={openEditModal}>수정</Button>
-        <Popconfirm
-          title="메뉴 삭제"
-          description="선택한 메뉴를 삭제하시겠습니까?"
-          disabled={!selectedMenu}
-          onConfirm={deleteMenu}
-        >
-          <Button danger icon={<DeleteOutlined />} disabled={!selectedMenu}>삭제</Button>
-        </Popconfirm>
-      </Space>
+      <PageToolbar
+        actions={[
+          <Button key="add" icon={<PlusOutlined />} onClick={openCreateModal}>
+            메뉴 추가
+          </Button>,
+          <Button key="edit" icon={<EditOutlined />} disabled={!selectedMenu} onClick={openEditModal}>
+            수정
+          </Button>,
+          <Popconfirm
+            key="delete"
+            title="메뉴 삭제"
+            description="선택한 메뉴를 삭제하시겠습니까?"
+            disabled={!selectedMenu}
+            onConfirm={deleteMenu}
+          >
+            <Button danger icon={<DeleteOutlined />} disabled={!selectedMenu}>삭제</Button>
+          </Popconfirm>,
+        ]}
+      />
 
       <Table
         rowKey="id"

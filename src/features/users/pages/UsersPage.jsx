@@ -3,9 +3,8 @@ import {
   DeleteOutlined,
   DownloadOutlined,
   PlusOutlined,
-  SearchOutlined,
 } from "@ant-design/icons";
-import { Button, Form, Input, message, Popconfirm, Select, Space } from "antd";
+import { Button, Form, Input, message, Popconfirm, Select } from "antd";
 import { AllCommunityModule } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import UserCreateModal from "../components/UserCreateModal.jsx";
@@ -14,6 +13,7 @@ import * as userApi from "../api/userApi.js";
 import * as userGroupApi from "../../userGroups/api/userGroupApi.js";
 import { statusOptions } from "../userOptions.js";
 import { downloadTableCsv } from "../../../utils/downloadCsv.js";
+import PageToolbar from "../../../components/layout/PageToolbar.jsx";
 
 const modules = [AllCommunityModule];
 
@@ -172,74 +172,60 @@ function UsersPage() {
       }}
     >
       {contextHolder}
-      <Form layout="inline" onFinish={handleSearch}>
-        <div
-          style={{ display: "flex", alignItems: "flex-start", width: "100%" }}
-        >
-          <div
-            style={{ display: "flex", flex: 1, flexWrap: "wrap", rowGap: 16 }}
+      <PageToolbar
+        onSearch={handleSearch}
+        actions={[
+          <Button
+            key="download"
+            icon={<DownloadOutlined />}
+            disabled={users.length === 0}
+            onClick={handleDownload}
           >
-            <Form.Item label="아이디" name="loginId">
-              <Input allowClear />
-            </Form.Item>
-            <Form.Item label="이름" name="name">
-              <Input allowClear />
-            </Form.Item>
-            <Form.Item label="이메일" name="email">
-              <Input allowClear />
-            </Form.Item>
-            <Form.Item label="사용자 그룹" name="groupId">
-              <Select
-                allowClear
-                style={{ width: 140 }}
-                options={groupOptions}
-              />
-            </Form.Item>
-            <Form.Item label="상태" name="status">
-              <Select
-                allowClear
-                style={{ width: 120 }}
-                options={statusOptions}
-              />
-            </Form.Item>
-          </div>
-          <Space>
+            엑셀 다운로드
+          </Button>,
+          <Button
+            key="add"
+            icon={<PlusOutlined />}
+            onClick={() => setIsAddModalOpen(true)}
+          >
+            추가
+          </Button>,
+          <Popconfirm
+            key="delete"
+            title="사용자 일괄 삭제"
+            description={`선택한 ${selectedUsers.length}명의 사용자를 삭제하시겠습니까?`}
+            okText="삭제"
+            cancelText="취소"
+            okButtonProps={{ danger: true }}
+            disabled={selectedUsers.length === 0}
+            onConfirm={handleDeleteSelected}
+          >
             <Button
-              icon={<DownloadOutlined />}
-              disabled={users.length === 0}
-              onClick={handleDownload}
-            >
-              엑셀 다운로드
-            </Button>
-            <Button
-              icon={<PlusOutlined />}
-              onClick={() => setIsAddModalOpen(true)}
-            >
-              추가
-            </Button>
-            <Popconfirm
-              title="사용자 일괄 삭제"
-              description={`선택한 ${selectedUsers.length}명의 사용자를 삭제하시겠습니까?`}
-              okText="삭제"
-              cancelText="취소"
-              okButtonProps={{ danger: true }}
+              danger
               disabled={selectedUsers.length === 0}
-              onConfirm={handleDeleteSelected}
+              icon={<DeleteOutlined />}
             >
-              <Button
-                danger
-                disabled={selectedUsers.length === 0}
-                icon={<DeleteOutlined />}
-              >
-                삭제{selectedUsers.length > 0 && ` (${selectedUsers.length})`}
-              </Button>
-            </Popconfirm>
-            <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
-              조회
+              삭제{selectedUsers.length > 0 && ` (${selectedUsers.length})`}
             </Button>
-          </Space>
-        </div>
-      </Form>
+          </Popconfirm>,
+        ]}
+      >
+        <Form.Item label="아이디" name="loginId">
+          <Input allowClear />
+        </Form.Item>
+        <Form.Item label="이름" name="name">
+          <Input allowClear />
+        </Form.Item>
+        <Form.Item label="이메일" name="email">
+          <Input allowClear />
+        </Form.Item>
+        <Form.Item label="사용자 그룹" name="groupId">
+          <Select allowClear style={{ width: 140 }} options={groupOptions} />
+        </Form.Item>
+        <Form.Item label="상태" name="status">
+          <Select allowClear style={{ width: 120 }} options={statusOptions} />
+        </Form.Item>
+      </PageToolbar>
 
       <div style={{ flex: 1, minHeight: 0 }}>
         <AgGridReact

@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { DownloadOutlined, SearchOutlined } from "@ant-design/icons";
+import { DownloadOutlined } from "@ant-design/icons";
 import { Button, DatePicker, Descriptions, Drawer, Form, Input, message, Select, Space, Table, Tag } from "antd";
 import { downloadTableCsv } from "../../../utils/downloadCsv.js";
 import * as userHistoryApi from "../api/userHistoryApi.js";
 import { actionLabels, actionOptions, fieldLabels } from "../userHistoryOptions.js";
+import PageToolbar from "../../../components/layout/PageToolbar.jsx";
 
 const actionColors = {
   CREATE: "green",
@@ -85,7 +86,19 @@ function UserHistoryPage() {
   return (
     <Space direction="vertical" size="middle" style={{ display: "flex" }}>
       {contextHolder}
-      <Form layout="inline" onFinish={handleSearch}>
+      <PageToolbar
+        onSearch={handleSearch}
+        actions={[
+          <Button
+            key="download"
+            icon={<DownloadOutlined />}
+            disabled={histories.length === 0}
+            onClick={handleDownload}
+          >
+            엑셀 다운로드
+          </Button>,
+        ]}
+      >
         <Form.Item label="작업 일시" name="period">
           <DatePicker.RangePicker />
         </Form.Item>
@@ -101,20 +114,7 @@ function UserHistoryPage() {
         <Form.Item label="작업자" name="actor">
           <Input allowClear />
         </Form.Item>
-        <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
-          조회
-        </Button>
-      </Form>
-
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <Button
-          icon={<DownloadOutlined />}
-          disabled={histories.length === 0}
-          onClick={handleDownload}
-        >
-          엑셀 다운로드
-        </Button>
-      </div>
+      </PageToolbar>
 
       <Table
         rowKey="id"
