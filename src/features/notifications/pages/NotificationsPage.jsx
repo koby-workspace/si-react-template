@@ -1,4 +1,4 @@
-import { Button, List, Space, Tag } from "antd";
+import { Button, List, Space, Tag, theme } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { getNotifications, markAllNotificationsAsRead, markNotificationAsRead } from "../api/notificationApi.js";
@@ -6,6 +6,7 @@ import { getNotifications, markAllNotificationsAsRead, markNotificationAsRead } 
 function NotificationsPage() {
   const [notifications, setNotifications] = useState([]);
   const navigate = useNavigate();
+  const { token } = theme.useToken();
   const load = () => getNotifications().then(setNotifications);
 
   useEffect(() => {
@@ -32,7 +33,10 @@ function NotificationsPage() {
         dataSource={notifications}
         locale={{ emptyText: "알림이 없습니다." }}
         renderItem={(item) => (
-          <List.Item style={{ cursor: "pointer", background: item.read ? undefined : "#f0f7ff" }} onClick={() => openNotification(item)}>
+          <List.Item
+            style={{ cursor: "pointer", background: item.read ? undefined : token.colorPrimaryBg }}
+            onClick={() => openNotification(item)}
+          >
             <List.Item.Meta
               title={<Space><Tag>{item.source}</Tag><span>{item.title}</span>{!item.read && <Tag color="blue">새 알림</Tag>}</Space>}
               description={item.createdAt}

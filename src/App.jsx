@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { BellOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
-import { Badge, Button, Layout, Menu, message, Tooltip } from "antd";
+import { BellOutlined, MenuFoldOutlined, MenuUnfoldOutlined, MoonOutlined, SunOutlined } from "@ant-design/icons";
+import { Badge, Button, ConfigProvider, Layout, Menu, message, theme, Tooltip } from "antd";
 import { Link, useLocation, useNavigate } from "react-router";
 import AppRoutes from "./routes/AppRoutes.jsx";
 import AppErrorBoundary from "./components/feedback/AppErrorBoundary.jsx";
@@ -36,6 +36,11 @@ function buildMenuItems(menus, parentId = null) {
 
 function App() {
   const [showSidebar, setShowSidebar] = useState(true);
+  const [darkMode, setDarkMode] = useState(() => {
+    const savedTheme = window.localStorage.getItem("si-react-template:theme");
+    if (savedTheme) return savedTheme === "dark";
+    return window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
+  });
   const [menus, setMenus] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [messageApi, contextHolder] = message.useMessage();
@@ -69,36 +74,124 @@ function App() {
     return () => window.removeEventListener(NOTIFICATIONS_CHANGED_EVENT, syncUnreadCount);
   }, []);
 
+  useEffect(() => {
+    window.localStorage.setItem("si-react-template:theme", darkMode ? "dark" : "light");
+    document.documentElement.style.colorScheme = darkMode ? "dark" : "light";
+  }, [darkMode]);
+
   const menuItems = buildMenuItems(menus);
+  const colors = darkMode
+    ? {
+        header: "#111827",
+        sider: "#111827",
+        content: "#0f172a",
+        border: "#263244",
+        text: "#f8fafc",
+        logo: "#818cf8",
+        shadow: "0 2px 12px rgba(0, 0, 0, 0.35)",
+      }
+    : {
+        header: "#ffffff",
+        sider: "#ffffff",
+        content: "#f5f7fb",
+        border: "#e5e7eb",
+        text: "#172033",
+        logo: "#4f46e5",
+        shadow: "0 2px 12px rgba(15, 23, 42, 0.08)",
+      };
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
+    <ConfigProvider
+      theme={{
+        algorithm: darkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
+        token: {
+          colorPrimary: "#6366f1",
+          borderRadius: 8,
+          colorBgLayout: colors.content,
+          colorBgContainer: darkMode ? "#182235" : "#ffffff",
+          colorBorderSecondary: colors.border,
+        },
+        components: {
+          Button: { controlHeight: 34 },
+          Card: { borderRadiusLG: 12 },
+          Menu: {
+            itemBorderRadius: 8,
+            itemMarginInline: 10,
+            itemMarginBlock: 4,
+            darkItemBg: colors.sider,
+            darkSubMenuItemBg: colors.sider,
+            darkItemSelectedBg: "#4f46e5",
+            itemSelectedBg: "#eef2ff",
+            itemSelectedColor: "#4338ca",
+          },
+          Table: { borderRadius: 10 },
+        },
+      }}
+    >
+      <Layout style={{ minHeight: "100vh" }}>
       {contextHolder}
       <Header
         style={{
-          color: "#ffffff",
+          color: colors.text,
+          background: colors.header,
+          borderBottom: `1px solid ${colors.border}`,
+          boxShadow: colors.shadow,
           display: "flex",
           alignItems: "center",
           gap: 16,
-          paddingLeft: 12,
+          height: 60,
+          lineHeight: "60px",
+          paddingInline: 16,
+          position: "relative",
+          zIndex: 1,
         }}
       >
         <Button
-          type="primary"
+          type="text"
           aria-label={showSidebar ? "Hide sidebar" : "Show sidebar"}
           onClick={() => setShowSidebar((visible) => !visible)}
           icon={showSidebar ? <MenuFoldOutlined /> : <MenuUnfoldOutlined />}
         />
-        <Link to="/dashboard" style={{ color: "inherit" }}>
-          SI React Template
+        <Link
+          to="/dashboard"
+          style={{ color: "inherit", display: "flex", alignItems: "center", gap: 10, fontWeight: 700, letterSpacing: "-0.01em" }}
+        >
+          <span
+            aria-hidden="true"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 30,
+              height: 30,
+              borderRadius: 9,
+              color: "#ffffff",
+              background: colors.logo,
+              fontSize: 12,
+              boxShadow: `0 5px 12px ${darkMode ? "rgba(99, 102, 241, 0.28)" : "rgba(79, 70, 229, 0.22)"}`,
+            }}
+          >
+            SI
+          </span>
+          <span>React Template</span>
         </Link>
-        <div style={{ marginLeft: "auto" }}>
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
+          <Tooltip title={darkMode ? "라이트 모드" : "다크 모드"}>
+            <Button
+              type="text"
+              aria-label={darkMode ? "라이트 모드로 전환" : "다크 모드로 전환"}
+              icon={darkMode
+                ? <SunOutlined style={{ fontSize: 18 }} />
+                : <MoonOutlined style={{ fontSize: 18 }} />}
+              onClick={() => setDarkMode((enabled) => !enabled)}
+            />
+          </Tooltip>
           <Tooltip title="알림">
             <Badge count={unreadCount} size="small" overflowCount={99} style={{ boxShadow: "none" }}>
               <Button
                 type="text"
                 aria-label={`알림 ${unreadCount}건`}
-                icon={<BellOutlined style={{ color: "#ffffff", fontSize: 20 }} />}
+                icon={<BellOutlined style={{ fontSize: 20 }} />}
                 onClick={() => navigate("/notifications")}
               />
             </Badge>
@@ -108,16 +201,21 @@ function App() {
 
       <Layout>
         {showSidebar && (
-          <Sider>
+          <Sider
+            width={232}
+            theme={darkMode ? "dark" : "light"}
+            style={{ background: colors.sider, borderInlineEnd: `1px solid ${colors.border}` }}
+          >
             <Menu
-              theme="dark"
+              theme={darkMode ? "dark" : "light"}
               mode="inline"
               selectedKeys={[location.pathname]}
               items={menuItems}
+              style={{ paddingTop: 12, borderInlineEnd: 0 }}
             />
           </Sider>
         )}
-        <Content style={{ overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        <Content style={{ overflow: "hidden", display: "flex", flexDirection: "column", background: colors.content }}>
           <div style={{ flex: 1, minHeight: 0, padding: 24, display: "flex", flexDirection: "column", gap: 16 }}>
             <CurrentMenuPath menus={menus} pathname={location.pathname} />
             <div style={{ flex: 1, minHeight: 0 }}>
@@ -128,7 +226,8 @@ function App() {
           </div>
         </Content>
       </Layout>
-    </Layout>
+      </Layout>
+    </ConfigProvider>
   );
 }
 
