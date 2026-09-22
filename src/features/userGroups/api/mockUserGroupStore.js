@@ -1,4 +1,6 @@
-let userGroups = [
+import { createLocalStorageStore } from "../../../storage/createLocalStorageStore.js";
+
+const initialUserGroups = [
   {
     id: "group-admin",
     name: "관리자",
@@ -15,20 +17,30 @@ let userGroups = [
   },
 ];
 
+const userGroupStore = createLocalStorageStore({
+  key: "si-react-template:user-groups",
+  version: 1,
+  initialData: initialUserGroups,
+});
+
 export function getUserGroups() {
-  return userGroups;
+  return userGroupStore.read();
 }
 
 export function addUserGroup(userGroup) {
-  userGroups = [...userGroups, userGroup];
+  userGroupStore.write([...userGroupStore.read(), userGroup]);
 }
 
 export function changeUserGroup(id, values) {
-  userGroups = userGroups.map((group) =>
-    group.id === id ? { ...group, ...values } : group,
+  userGroupStore.write(
+    userGroupStore
+      .read()
+      .map((group) => (group.id === id ? { ...group, ...values } : group)),
   );
 }
 
 export function removeUserGroup(id) {
-  userGroups = userGroups.filter((group) => group.id !== id);
+  userGroupStore.write(
+    userGroupStore.read().filter((group) => group.id !== id),
+  );
 }

@@ -1,6 +1,8 @@
+import { createLocalStorageStore } from "../../../storage/createLocalStorageStore.js";
+
 const names = ["김민수", "이서준", "박지우", "최도윤", "정현우"];
 
-let users = Array.from({ length: 45 }, (_, index) => {
+const initialUsers = Array.from({ length: 45 }, (_, index) => {
   const userNumber = index + 1;
 
   return {
@@ -16,7 +18,14 @@ let users = Array.from({ length: 45 }, (_, index) => {
   };
 });
 
+const userStore = createLocalStorageStore({
+  key: "si-react-template:users",
+  version: 1,
+  initialData: initialUsers,
+});
+
 export async function getUsers(params = {}) {
+  const users = userStore.read();
   const normalizedLoginId = params.loginId?.trim().toLowerCase();
   const normalizedName = params.name?.trim().toLowerCase();
   const normalizedEmail = params.email?.trim().toLowerCase();
@@ -36,6 +45,7 @@ export async function getUsers(params = {}) {
 }
 
 export async function createUser(values) {
+  const users = userStore.read();
   const duplicated = users.some(
     (user) => user.loginId.toLowerCase() === values.loginId.toLowerCase(),
   );
@@ -54,32 +64,39 @@ export async function createUser(values) {
     createdAt: new Date().toLocaleDateString("sv-SE"),
   };
 
-  users = [newUser, ...users];
+  userStore.write([newUser, ...users]);
   return newUser;
 }
 
 export async function updateUser(id, values) {
-  users = users.map((user) => (user.id === id ? { ...user, ...values } : user));
+  const users = userStore.read();
+  userStore.write(
+    users.map((user) => (user.id === id ? { ...user, ...values } : user)),
+  );
 }
 
 export async function deleteUsers(ids) {
   const selectedIds = new Set(ids);
-  users = users.filter((user) => !selectedIds.has(user.id));
+  userStore.write(
+    userStore.read().filter((user) => !selectedIds.has(user.id)),
+  );
 }
 
 export function getAllUsers() {
-  return users;
+  return userStore.read();
 }
 
 export function assignUsersToGroup(groupId, userIds) {
   const selectedIds = new Set(userIds);
-  users = users.map((user) => {
-    if (user.groupId === groupId && !selectedIds.has(user.id)) {
-      return { ...user, groupId: "group-user" };
-    }
-    if (selectedIds.has(user.id)) {
-      return { ...user, groupId };
-    }
-    return user;
-  });
+  userStore.write(
+    userStore.read().map((user) => {
+      if (user.groupId === groupId && !selectedIds.has(user.id)) {
+        return { ...user, groupId: "group-user" };
+      }
+      if (selectedIds.has(user.id)) {
+        return { ...user, groupId };
+      }
+      return user;
+    }),
+  );
 }
