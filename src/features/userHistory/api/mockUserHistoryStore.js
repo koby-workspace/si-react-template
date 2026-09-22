@@ -2,7 +2,7 @@ import { createLocalStorageStore } from "../../../storage/createLocalStorageStor
 
 const historyStore = createLocalStorageStore({
   key: "si-react-template:user-history",
-  version: 1,
+  version: 2,
   initialData: [],
 });
 

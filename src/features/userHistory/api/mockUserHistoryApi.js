@@ -8,11 +8,12 @@ export async function getUserHistory(params = {}) {
   const endTime = params.endAt ? new Date(params.endAt).getTime() : null;
 
   return getStoredUserHistory().filter((history) => {
-    const loginId = history.entityLoginId ?? history.entityName.split(" (")[0];
-    const name = history.entityUserName ?? history.entityName.match(/\((.*)\)$/)?.[1] ?? "";
     const matchesLoginId =
-      !normalizedLoginId || loginId.toLowerCase().includes(normalizedLoginId);
-    const matchesName = !normalizedName || name.toLowerCase().includes(normalizedName);
+      !normalizedLoginId ||
+      history.entityLoginId.toLowerCase().includes(normalizedLoginId);
+    const matchesName =
+      !normalizedName ||
+      history.entityUserName.toLowerCase().includes(normalizedName);
     const matchesActor =
       !normalizedActor || history.actor.toLowerCase().includes(normalizedActor);
     const matchesAction = !params.action || history.action === params.action;

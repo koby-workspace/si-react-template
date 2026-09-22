@@ -11,14 +11,6 @@ const actionColors = {
   DELETE: "red",
 };
 
-function getLoginId(history) {
-  return history.entityLoginId ?? history.entityName.split(" (")[0];
-}
-
-function getUserName(history) {
-  return history.entityUserName ?? history.entityName.match(/\((.*)\)$/)?.[1] ?? "";
-}
-
 const columns = [
   {
     title: "작업 일시",
@@ -36,13 +28,11 @@ const columns = [
     title: "아이디",
     dataIndex: "entityLoginId",
     width: 140,
-    render: (_, record) => getLoginId(record),
   },
   {
     title: "이름",
     dataIndex: "entityUserName",
     width: 120,
-    render: (_, record) => getUserName(record) || "-",
   },
   { title: "작업자", dataIndex: "actor", width: 120 },
   { title: "변경 요약", dataIndex: "summary" },
@@ -151,8 +141,11 @@ function UserHistoryPage() {
               <Descriptions.Item label="구분">
                 {actionLabels[selectedHistory.action]}
               </Descriptions.Item>
-              <Descriptions.Item label="대상 사용자">
-                {selectedHistory.entityName}
+              <Descriptions.Item label="아이디">
+                {selectedHistory.entityLoginId}
+              </Descriptions.Item>
+              <Descriptions.Item label="이름">
+                {selectedHistory.entityUserName}
               </Descriptions.Item>
               <Descriptions.Item label="작업자">
                 {selectedHistory.actor}

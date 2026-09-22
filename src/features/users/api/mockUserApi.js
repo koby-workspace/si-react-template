@@ -58,7 +58,6 @@ function recordHistory(action, user, changes) {
   addStoredUserHistory({
     id: createHistoryId(),
     entityId: user.id,
-    entityName: `${user.loginId} (${user.name})`,
     entityLoginId: user.loginId,
     entityUserName: user.name,
     action,
