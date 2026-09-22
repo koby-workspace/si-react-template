@@ -1,4 +1,7 @@
 import { createLocalStorageStore } from "../../../storage/createLocalStorageStore.js";
+import { addStoredUserHistory } from "../../userHistory/api/mockUserHistoryStore.js";
+import { fieldLabels } from "../../userHistory/userHistoryOptions.js";
+import { getUserGroups } from "../../userGroups/api/mockUserGroupStore.js";
 
 const names = ["김민수", "이서준", "박지우", "최도윤", "정현우"];
 
@@ -23,6 +26,53 @@ const userStore = createLocalStorageStore({
   version: 1,
   initialData: initialUsers,
 });
+
+const historyFields = ["loginId", "name", "email", "groupId", "status"];
+
+function createHistoryId() {
+  return typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `history-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function toDisplayValue(field, value) {
+  if (value == null) return null;
+  if (field !== "groupId") return value;
+  return getUserGroups().find(({ id }) => id === value)?.name ?? value;
+}
+
+function buildChanges(before, after) {
+  return historyFields
+    .filter((field) => before?.[field] !== after?.[field])
+    .map((field) => ({
+      field,
+      before: toDisplayValue(field, before?.[field]),
+      after: toDisplayValue(field, after?.[field]),
+    }));
+}
+
+function recordHistory(action, user, changes) {
+  if (changes.length === 0) return;
+
+  const changedFields = changes.map(({ field }) => fieldLabels[field] ?? field);
+  addStoredUserHistory({
+    id: createHistoryId(),
+    entityId: user.id,
+    entityName: `${user.loginId} (${user.name})`,
+    entityLoginId: user.loginId,
+    entityUserName: user.name,
+    action,
+    actor: "admin",
+    occurredAt: new Date().toISOString(),
+    summary:
+      action === "CREATE"
+        ? "사용자 등록"
+        : action === "DELETE"
+          ? "사용자 삭제"
+          : `${changedFields.join(", ")} 변경`,
+    changes,
+  });
+}
 
 export async function getUsers(params = {}) {
   const users = userStore.read();
@@ -65,21 +115,28 @@ export async function createUser(values) {
   };
 
   userStore.write([newUser, ...users]);
+  recordHistory("CREATE", newUser, buildChanges(null, newUser));
   return newUser;
 }
 
 export async function updateUser(id, values) {
   const users = userStore.read();
-  userStore.write(
-    users.map((user) => (user.id === id ? { ...user, ...values } : user)),
-  );
+  const previousUser = users.find((user) => user.id === id);
+  if (!previousUser) return;
+
+  const updatedUser = { ...previousUser, ...values };
+  userStore.write(users.map((user) => (user.id === id ? updatedUser : user)));
+  recordHistory("UPDATE", updatedUser, buildChanges(previousUser, updatedUser));
 }
 
 export async function deleteUsers(ids) {
   const selectedIds = new Set(ids);
-  userStore.write(
-    userStore.read().filter((user) => !selectedIds.has(user.id)),
-  );
+  const users = userStore.read();
+  const deletedUsers = users.filter((user) => selectedIds.has(user.id));
+  userStore.write(users.filter((user) => !selectedIds.has(user.id)));
+  deletedUsers.forEach((user) => {
+    recordHistory("DELETE", user, buildChanges(user, null));
+  });
 }
 
 export function getAllUsers() {
@@ -88,8 +145,8 @@ export function getAllUsers() {
 
 export function assignUsersToGroup(groupId, userIds) {
   const selectedIds = new Set(userIds);
-  userStore.write(
-    userStore.read().map((user) => {
+  const users = userStore.read();
+  const updatedUsers = users.map((user) => {
       if (user.groupId === groupId && !selectedIds.has(user.id)) {
         return { ...user, groupId: "group-user" };
       }
@@ -97,6 +154,10 @@ export function assignUsersToGroup(groupId, userIds) {
         return { ...user, groupId };
       }
       return user;
-    }),
-  );
+    });
+
+  userStore.write(updatedUsers);
+  updatedUsers.forEach((user, index) => {
+    recordHistory("UPDATE", user, buildChanges(users[index], user));
+  });
 }
