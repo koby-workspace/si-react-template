@@ -16,7 +16,9 @@ function buildMenuItems(menus, parentId = null) {
       const children = buildMenuItems(menus, menu.id);
       return {
         key: menu.path,
-        label: (
+        label: children.length ? (
+          menu.name
+        ) : (
           <Link
             to={menu.path}
             style={{ color: "inherit" }}
