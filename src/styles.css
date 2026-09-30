@@ -1,0 +1,25 @@
+body {
+  margin: 0;
+}
+
+.app-layout {
+  height: 100vh;
+}
+
+.app-top {
+  color: #fff;
+  padding: 0 24px;
+}
+
+.app-body {
+  min-height: 0;
+}
+
+.app-left {
+  padding: 24px;
+}
+
+.app-content {
+  padding: 24px;
+  overflow: auto;
+}
