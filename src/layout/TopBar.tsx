@@ -1,5 +1,6 @@
 import { Button, Layout } from "antd";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
+import { Link } from "react-router";
 
 type TopBarProps = {
   collapsed: boolean;
@@ -21,7 +22,7 @@ function TopBar({ collapsed, onToggle }: TopBarProps) {
         aria-controls="app-side-menu"
         aria-expanded={!collapsed}
       />
-      <span>SI React Template</span>
+      <Link className="app-system-name" to="/">SI React Template</Link>
     </Layout.Header>
   );
 }
