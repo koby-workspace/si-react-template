@@ -1,75 +1,29 @@
-# React + TypeScript + Vite
+﻿# SI React Template
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React, TypeScript, Ant Design을 사용하는 SI 프로젝트용 기본 템플릿입니다.
 
-Currently, two official plugins are available:
+## 시작하기
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Node.js 24와 npm이 필요합니다. 프로젝트 루트에서 실행하세요.
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm ci
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+터미널에 표시된 주소로 접속하세요. 서버 종료는 `Ctrl+C`입니다.
+Windows PowerShell에서는 `npm` 대신 `npm.cmd`를 사용할 수 있습니다.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 주요 명령어
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| 명령어 | 설명 |
+| --- | --- |
+| `npm run dev` | 개발 서버 실행 |
+| `npm run lint` | 코드 검사 |
+| `npm run build` | 타입 검사 및 배포용 빌드 |
+| `npm run preview` | 빌드 결과 미리보기 |
 
-```
+## 관련 문서
+
+- [프로토타입 설계](./docs/prototype-design.md)
+- [개발·학습 계획](./docs/learning-plan.md)
