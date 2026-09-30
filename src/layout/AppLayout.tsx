@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useState } from "react";
 import { Layout } from "antd";
 import TopBar from "./TopBar";
 import SideMenu from "./SideMenu";
@@ -8,11 +9,17 @@ type AppLayoutProps = {
 };
 
 function AppLayout({ children }: AppLayoutProps) {
+  const [collapsed, setCollapsed] = useState(false);
+
+  function handleToggle() {
+    setCollapsed((previousCollapsed) => !previousCollapsed);
+  }
+
   return (
     <Layout className="app-layout">
-      <TopBar />
+      <TopBar collapsed={collapsed} onToggle={handleToggle} />
       <Layout className="app-body">
-        <SideMenu />
+        <SideMenu collapsed={collapsed} />
         <Layout.Content className="app-content">{children}</Layout.Content>
       </Layout>
     </Layout>
