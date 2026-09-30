@@ -1,11 +1,22 @@
 import { Layout, Menu } from "antd";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 
 type SideMenuProps = {
   collapsed: boolean;
 };
 
+const menus = [
+  { path: "/", label: "홈" },
+  { path: "/dashboard", label: "대시보드" },
+  { path: "/users", label: "사용자 관리" },
+];
+
 function SideMenu({ collapsed }: SideMenuProps) {
+  const { pathname } = useLocation();
+  const currentPath = pathname.toLowerCase().replace(/\/+$/, "") || "/";
+  const selectedMenu = menus.find((menu) => menu.path === currentPath);
+  const selectedKeys = selectedMenu ? [selectedMenu.path] : [];
+
   return (
     <Layout.Sider
       id="app-side-menu"
@@ -20,12 +31,11 @@ function SideMenu({ collapsed }: SideMenuProps) {
         <div className="app-left-content">
           <Menu
             mode="inline"
-            selectable={false}
-            items={[
-              { key: "home", label: <Link to="/">홈</Link> },
-              { key: "dashboard", label: <Link to="/dashboard">대시보드</Link> },
-              { key: "users", label: <Link to="/users">사용자 관리</Link> },
-            ]}
+            selectedKeys={selectedKeys}
+            items={menus.map((menu) => ({
+              key: menu.path,
+              label: <Link to={menu.path}>{menu.label}</Link>,
+            }))}
           />
         </div>
       )}
