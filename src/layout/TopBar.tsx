@@ -1,17 +1,21 @@
-import { Button, Layout } from "antd";
-import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
+import { Button, Layout, theme } from "antd";
+import { MenuFoldOutlined, MenuUnfoldOutlined, MoonOutlined, SunOutlined } from "@ant-design/icons";
 import { Link } from "react-router";
 
 type TopBarProps = {
   collapsed: boolean;
   onToggle: () => void;
+  isDarkMode: boolean;
+  onThemeChange: (checked: boolean) => void;
 };
 
-function TopBar({ collapsed, onToggle }: TopBarProps) {
+function TopBar({ collapsed, onToggle, isDarkMode, onThemeChange }: TopBarProps) {
+  const { token } = theme.useToken();
   const toggleLabel = collapsed ? "메뉴 펼치기" : "메뉴 접기";
+  const themeToggleLabel = isDarkMode ? "라이트 모드로 전환" : "다크 모드로 전환";
 
   return (
-    <Layout.Header className="app-top">
+    <Layout.Header className="app-top" style={{ background: token.colorBgContainer }}>
       <Button
         type="text"
         className="app-menu-toggle"
@@ -23,6 +27,14 @@ function TopBar({ collapsed, onToggle }: TopBarProps) {
         aria-expanded={!collapsed}
       />
       <Link className="app-system-name" to="/">SI React Template</Link>
+      <Button
+        type="text"
+        className="app-theme-toggle"
+        icon={isDarkMode ? <SunOutlined /> : <MoonOutlined />}
+        onClick={() => onThemeChange(!isDarkMode)}
+        title={themeToggleLabel}
+        aria-label={themeToggleLabel}
+      />
     </Layout.Header>
   );
 }
