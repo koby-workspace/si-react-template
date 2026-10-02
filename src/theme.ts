@@ -1,5 +1,6 @@
 import { theme } from "antd";
 import type { ThemeConfig } from "antd";
+import { themeQuartz } from "ag-grid-community";
 
 export type ThemeName = "classic-blue" | "soft-green" | "modern-purple" | "minimal-mono" | "warm-orange";
 
@@ -152,11 +153,26 @@ export function getAppTheme(themeName: ThemeName, isDarkMode: boolean): ThemeCon
         itemActiveBg: palette.selected,
         itemBorderRadius: preset.borderRadius,
       },
-      Table: {
-        headerBg: palette.tableHeader,
-        borderColor: palette.border,
-        headerBorderRadius: preset.borderRadius,
-      },
     },
   };
+}
+
+export function getGridTheme(themeName: ThemeName, isDarkMode: boolean) {
+  const preset = themePresets[themeName];
+  const palette = isDarkMode ? preset.dark : preset.light;
+
+  return themeQuartz.withParams({
+    browserColorScheme: isDarkMode ? "dark" : "light",
+    backgroundColor: palette.container,
+    foregroundColor: isDarkMode ? "#eeeeee" : "#222222",
+    headerBackgroundColor: palette.tableHeader,
+    borderColor: palette.border,
+    accentColor: palette.primary,
+    borderRadius: preset.borderRadius,
+    wrapperBorderRadius: preset.borderRadius,
+    fontFamily: "inherit",
+    fontSize: 14,
+    rowHeight: 48,
+    headerHeight: 48,
+  });
 }

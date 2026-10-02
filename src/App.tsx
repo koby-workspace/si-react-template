@@ -30,7 +30,7 @@ function App() {
           }>
             <Route index element={<HomePage />} />
             <Route path="dashboard" element={<DashboardPage />} />
-            <Route path="users" element={<UserPage />} />
+            <Route path="users" element={<UserPage themeName={themeName} isDarkMode={isDarkMode} />} />
           </Route>
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

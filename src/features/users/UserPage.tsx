@@ -1,35 +1,66 @@
-import { Table } from "antd";
-import type { TableColumnsType } from "antd";
+import { useMemo } from "react";
+import { ClientSideRowModelModule } from "ag-grid-community";
+import type { ColDef, GetRowIdParams } from "ag-grid-community";
+import { AgGridReact } from "ag-grid-react";
+import { getGridTheme } from "../../theme";
+import type { ThemeName } from "../../theme";
 import { mockUsers } from "./mockUsers";
 import type { User } from "./types";
 
-const columns: TableColumnsType<User> = [
-  { title: "ID", dataIndex: "id", key: "id" },
-  { title: "이름", dataIndex: "name", key: "name" },
-  { title: "이메일", dataIndex: "email", key: "email" },
+const modules = [ClientSideRowModelModule];
+const defaultColDef: ColDef<User> = {
+  sortable: false,
+  resizable: false,
+  suppressMovable: true,
+  cellDataType: false,
+};
+
+const columns: ColDef<User>[] = [
+  { headerName: "ID", field: "id", minWidth: 130, flex: 1 },
+  { headerName: "이름", field: "name", minWidth: 110, flex: 1 },
+  { headerName: "이메일", field: "email", minWidth: 260, flex: 2 },
   {
-    title: "부서",
-    dataIndex: "department",
-    key: "department",
-    render: (department: string) => department || "-",
+    headerName: "부서",
+    field: "department",
+    minWidth: 120,
+    flex: 1,
+    valueFormatter: ({ value }) => value || "-",
   },
   {
-    title: "활성 여부",
-    dataIndex: "activeYn",
-    key: "activeYn",
+    headerName: "활성 여부",
+    field: "activeYn",
+    minWidth: 100,
+    flex: 1,
   },
 ];
 
-function UserPage() {
+function getRowId({ data }: GetRowIdParams<User>) {
+  return data.id;
+}
+
+type UserPageProps = {
+  themeName: ThemeName;
+  isDarkMode: boolean;
+};
+
+function UserPage({ themeName, isDarkMode }: UserPageProps) {
+  const gridTheme = useMemo(
+    () => getGridTheme(themeName, isDarkMode),
+    [themeName, isDarkMode],
+  );
+
   return (
     <>
       <h1>사용자 관리</h1>
-      <Table<User>
-        columns={columns}
-        dataSource={mockUsers}
-        rowKey="id"
+      <AgGridReact<User>
+        modules={modules}
+        theme={gridTheme}
+        columnDefs={columns}
+        defaultColDef={defaultColDef}
+        rowData={mockUsers}
+        getRowId={getRowId}
         pagination={false}
-        scroll={{ x: 720 }}
+        domLayout="autoHeight"
       />
     </>
   );
