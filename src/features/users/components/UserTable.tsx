@@ -58,6 +58,7 @@ function UserTable({ users, themeName, isDarkMode }: UserTableProps) {
       rowData={users}
       getRowId={getRowId}
       pagination={false}
+      containerStyle={{ height: "auto" }}
       domLayout="autoHeight"
     />
   );
