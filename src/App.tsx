@@ -1,4 +1,4 @@
-import { Outlet, Route, Routes } from "react-router";
+import { Route, Routes } from "react-router";
 import AppLayout from "./layout/AppLayout";
 import DashboardPage from "./pages/DashboardPage";
 import HomePage from "./pages/HomePage";
@@ -9,13 +9,7 @@ import "./styles.css";
 function App() {
   return (
     <Routes>
-      <Route
-        element={
-          <AppLayout>
-            <Outlet />
-          </AppLayout>
-        }
-      >
+      <Route element={<AppLayout />}>
         <Route index element={<HomePage />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="users" element={<UserPage />} />
