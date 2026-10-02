@@ -27,15 +27,25 @@ body {
   text-decoration: none;
 }
 
-.app-top .app-menu-toggle,
-.app-top .app-theme-toggle {
+.app-layout .app-top .ant-btn.app-menu-toggle,
+.app-layout .app-top .ant-btn.app-theme-toggle {
   width: 40px;
   height: 40px;
   font-size: 18px;
+  color: inherit;
 }
 
-.app-theme-toggle {
+.app-theme-select {
   margin-left: auto;
+  width: 180px;
+}
+
+.app-layout .app-top .ant-btn.app-menu-toggle:hover,
+.app-layout .app-top .ant-btn.app-menu-toggle:active,
+.app-layout .app-top .ant-btn.app-theme-toggle:hover,
+.app-layout .app-top .ant-btn.app-theme-toggle:active {
+  color: inherit;
+  background: rgb(128 128 128 / 20%);
 }
 
 .app-content a,
