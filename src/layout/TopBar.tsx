@@ -15,7 +15,13 @@ function TopBar({ collapsed, onToggle, isDarkMode, onThemeChange }: TopBarProps)
   const themeToggleLabel = isDarkMode ? "라이트 모드로 전환" : "다크 모드로 전환";
 
   return (
-    <Layout.Header className="app-top" style={{ background: token.colorBgContainer }}>
+    <Layout.Header
+      className="app-top"
+      style={{
+        background: token.colorPrimaryBg,
+        borderBottom: `1px solid ${token.colorPrimaryBorder}`,
+      }}
+    >
       <Button
         type="text"
         className="app-menu-toggle"
