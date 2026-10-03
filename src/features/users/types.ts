@@ -9,6 +9,7 @@ export type User = {
 };
 
 export type UserFormValues = {
+  id: string;
   name: string;
   email: string;
   department: string;

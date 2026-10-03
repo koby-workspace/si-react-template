@@ -1,23 +1,27 @@
-import { useState } from "react";
 import { Alert, Form, Input, Modal, Select } from "antd";
 import type { UserFormValues } from "../types";
 
 type UserFormModalProps = {
   onCancel: () => void;
+  onSave: (values: UserFormValues) => Promise<void>;
+  isSaving: boolean;
+  saveError: string;
 };
 
-function UserFormModal({ onCancel }: UserFormModalProps) {
+function UserFormModal({ onCancel, onSave, isSaving, saveError }: UserFormModalProps) {
   const [form] = Form.useForm<UserFormValues>();
-  const [isInputChecked, setIsInputChecked] = useState(false);
 
   function handleFinish(values: UserFormValues) {
-    form.setFieldsValue({
+    if (isSaving) return;
+    const normalizedValues = {
       ...values,
+      id: values.id.trim(),
       name: values.name.trim(),
       email: values.email.trim(),
       department: values.department.trim(),
-    });
-    setIsInputChecked(true);
+    };
+    form.setFieldsValue(normalizedValues);
+    void onSave(normalizedValues);
   }
 
   return (
@@ -25,29 +29,41 @@ function UserFormModal({ onCancel }: UserFormModalProps) {
       title="사용자 등록"
       open
       centered
-      okText="확인"
+      okText="저장"
+      confirmLoading={isSaving}
+      okButtonProps={{ disabled: isSaving }}
+      cancelButtonProps={{ disabled: isSaving }}
+      closable={!isSaving}
+      keyboard={!isSaving}
+      mask={{ closable: !isSaving }}
       cancelText="취소"
       onOk={() => form.submit()}
       onCancel={onCancel}
       styles={{ body: { paddingBottom: 72 } }}
     >
-      <p>사용자 등록 기능은 개발 중입니다. 현재는 입력값 검증만 가능합니다.</p>
-      {isInputChecked && (
+      <p>등록한 데이터는 새로고침하면 초기화됩니다.</p>
+      {saveError && (
         <Alert
-          type="info"
+          type="error"
           showIcon
-          title="개발 중입니다. 사용자 등록 기능은 아직 완성되지 않아 저장되지 않습니다."
+          title={saveError}
         />
       )}
       <Form<UserFormValues>
         name="user-create"
         form={form}
         layout="vertical"
-        initialValues={{ name: "", email: "", department: "", activeYn: "Y" }}
+        disabled={isSaving}
+        initialValues={{ id: "", name: "", email: "", department: "", activeYn: "Y" }}
         onFinish={handleFinish}
-        onValuesChange={() => setIsInputChecked(false)}
-        onFinishFailed={() => setIsInputChecked(false)}
       >
+        <Form.Item
+          name="id"
+          label="ID"
+          rules={[{ required: true, whitespace: true, message: "ID를 입력해 주세요." }]}
+        >
+          <Input />
+        </Form.Item>
         <Form.Item
           name="name"
           label="이름"

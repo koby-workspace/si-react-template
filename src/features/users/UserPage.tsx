@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, Button, Empty, Pagination, Spin } from "antd";
 import type { ThemeName } from "../../theme";
 import UserSearchForm from "./components/UserSearchForm";
 import type { UserSearchValues } from "./components/UserSearchForm";
 import UserTable from "./components/UserTable";
 import UserFormModal from "./components/UserFormModal";
-import { getUsers } from "./api/userApi";
-import type { UserListQuery, UserListResult } from "./types";
+import { createUser, getUsers } from "./api/userApi";
+import type { UserFormValues, UserListQuery, UserListResult } from "./types";
 
 type UserPageProps = {
   themeName: ThemeName;
@@ -25,6 +25,10 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [hasCreatedUser, setHasCreatedUser] = useState(false);
+  const savingRef = useRef(false);
 
   useEffect(() => {
     let ignore = false;
@@ -61,6 +65,23 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
   function handleReset() {
     changeQuery({ ...query, name: "", activeYn: "", page: 1 });
   }
+  async function handleCreate(values: UserFormValues) {
+    if (savingRef.current) return;
+    savingRef.current = true;
+    setIsSaving(true);
+    setSaveError("");
+    try {
+      await createUser(values);
+      setIsCreateModalOpen(false);
+      setHasCreatedUser(true);
+      changeQuery({ ...query, page: 1 });
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "사용자 등록에 실패했습니다. 다시 저장해 주세요.");
+    } finally {
+      savingRef.current = false;
+      setIsSaving(false);
+    }
+  }
 
   return (
     <>
@@ -70,11 +91,19 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
         이름과 활성 여부를 선택한 뒤 검색하세요. 초기화하면 전체 목록으로
         돌아갑니다.
       </p>
+      <p>변경한 데이터는 메뉴 이동 시 유지되며, 새로고침하면 초기화됩니다.</p>
+      {hasCreatedUser && (
+        <Alert type="success" showIcon title="사용자를 등록했습니다. 목록에는 적용된 검색 조건에 맞는 사용자만 표시됩니다." />
+      )}
       <div className="user-list-toolbar">
         <span>
           {!isLoading && !hasError && `조회 결과: 총 ${result.total}건`}
         </span>
-        <Button type="primary" onClick={() => setIsCreateModalOpen(true)}>
+        <Button type="primary" onClick={() => {
+          setSaveError("");
+          setHasCreatedUser(false);
+          setIsCreateModalOpen(true);
+        }}>
           등록
         </Button>
       </div>
@@ -86,7 +115,9 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
         <Alert
           type="error"
           showIcon
-          title="사용자 목록을 불러오지 못했습니다. 다시 검색해 주세요."
+          title={hasCreatedUser
+            ? "등록은 완료했지만 사용자 목록을 불러오지 못했습니다. 다시 검색하면 목록만 조회합니다."
+            : "사용자 목록을 불러오지 못했습니다. 다시 검색해 주세요."}
         />
       ) : (
         <>
@@ -110,7 +141,12 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
         </>
       )}
       {isCreateModalOpen && (
-        <UserFormModal onCancel={() => setIsCreateModalOpen(false)} />
+        <UserFormModal
+          onCancel={() => { if (!savingRef.current) setIsCreateModalOpen(false); }}
+          onSave={handleCreate}
+          isSaving={isSaving}
+          saveError={saveError}
+        />
       )}
     </>
   );
