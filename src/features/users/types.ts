@@ -7,3 +7,15 @@ export type User = {
   department: string;
   activeYn: YN;
 };
+
+export type UserListQuery = {
+  name: string;
+  activeYn: "" | YN;
+  page: number;
+  pageSize: number;
+};
+
+export type UserListResult = {
+  items: User[];
+  total: number;
+};

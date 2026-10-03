@@ -5,6 +5,7 @@ import UserSearchForm from "./components/UserSearchForm";
 import type { UserSearchValues } from "./components/UserSearchForm";
 import UserTable from "./components/UserTable";
 import { mockUsers } from "./mockUsers";
+import { queryUsers } from "./api/queryUsers";
 
 type UserPageProps = {
   themeName: ThemeName;
@@ -20,20 +21,16 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
     activeYn: "",
   });
 
-  const filteredUsers = mockUsers.filter(
-    (user) =>
-      user.name.toLowerCase().includes(appliedSearch.name) &&
-      (appliedSearch.activeYn === "" ||
-        user.activeYn === appliedSearch.activeYn),
-  );
-
-  const total = filteredUsers.length;
-  const startIndex = (currentPage - 1) * PAGE_SIZE;
-  const pageUsers = filteredUsers.slice(startIndex, startIndex + PAGE_SIZE);
+  const { items, total } = queryUsers(mockUsers, {
+    name: appliedSearch.name,
+    activeYn: appliedSearch.activeYn,
+    page: currentPage,
+    pageSize: PAGE_SIZE,
+  });
 
   function handleSearch(values: UserSearchValues) {
     setAppliedSearch({
-      name: values.name.trim().toLowerCase(),
+      name: values.name,
       activeYn: values.activeYn,
     });
     setCurrentPage(1);
@@ -57,7 +54,7 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
         <Empty description="검색 결과가 없습니다." />
       ) : (
         <UserTable
-          users={pageUsers}
+          users={items}
           themeName={themeName}
           isDarkMode={isDarkMode}
         />
