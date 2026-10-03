@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Alert, Empty, Pagination, Spin } from "antd";
+import { Alert, Button, Empty, Pagination, Spin } from "antd";
 import type { ThemeName } from "../../theme";
 import UserSearchForm from "./components/UserSearchForm";
 import type { UserSearchValues } from "./components/UserSearchForm";
 import UserTable from "./components/UserTable";
+import UserFormModal from "./components/UserFormModal";
 import { getUsers } from "./api/userApi";
 import type { UserListQuery, UserListResult } from "./types";
 
@@ -23,6 +24,7 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
   const [result, setResult] = useState<UserListResult>({ items: [], total: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
     let ignore = false;
@@ -68,6 +70,14 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
         이름과 활성 여부를 선택한 뒤 검색하세요. 초기화하면 전체 목록으로
         돌아갑니다.
       </p>
+      <div className="user-list-toolbar">
+        <span>
+          {!isLoading && !hasError && `조회 결과: 총 ${result.total}건`}
+        </span>
+        <Button type="primary" onClick={() => setIsCreateModalOpen(true)}>
+          등록
+        </Button>
+      </div>
       {isLoading ? (
         <div role="status" aria-live="polite">
           <Spin size="small" /> 사용자 목록을 조회 중입니다.
@@ -80,7 +90,6 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
         />
       ) : (
         <>
-          <p>조회 결과: 총 {result.total}건</p>
           {result.total === 0 ? (
             <Empty description="검색 결과가 없습니다." />
           ) : (
@@ -99,6 +108,9 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
             onChange={(page) => changeQuery({ ...query, page })}
           />
         </>
+      )}
+      {isCreateModalOpen && (
+        <UserFormModal onCancel={() => setIsCreateModalOpen(false)} />
       )}
     </>
   );

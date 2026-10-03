@@ -2,6 +2,13 @@ body {
   margin: 0;
 }
 
+.user-list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
 .not-found-page {
   min-height: 100vh;
   box-sizing: border-box;
