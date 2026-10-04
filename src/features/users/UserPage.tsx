@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button, Empty, Pagination, Spin } from "antd";
+import PageHeader from "../../components/PageHeader";
 import { appAlert } from "../../utils/appAlert";
 import type { ThemeName } from "../../theme";
 import UserSearchForm from "./components/UserSearchForm";
@@ -162,13 +163,19 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
 
   return (
     <>
-      <h1>사용자 관리</h1>
+      <PageHeader
+        title="사용자 관리"
+        description={
+          <>
+            <p>
+              이름과 활성 여부를 선택한 뒤 검색하세요. 초기화하면 전체 목록으로
+              돌아갑니다.
+            </p>
+            <p>변경한 데이터는 메뉴 이동 시 유지되며, 새로고침하면 초기화됩니다.</p>
+          </>
+        }
+      />
       <UserSearchForm onSearch={handleSearch} onReset={handleReset} />
-      <p>
-        이름과 활성 여부를 선택한 뒤 검색하세요. 초기화하면 전체 목록으로
-        돌아갑니다.
-      </p>
-      <p>변경한 데이터는 메뉴 이동 시 유지되며, 새로고침하면 초기화됩니다.</p>
       <div className="user-list-toolbar">
         <span>
           {!isLoading && !hasError && `조회 결과: 총 ${result.total}건 · 선택 ${selectedUsers.length}명`}
