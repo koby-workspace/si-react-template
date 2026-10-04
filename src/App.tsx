@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { ConfigProvider } from "antd";
+import { App as AntApp, ConfigProvider } from "antd";
 import { Route, Routes } from "react-router";
 import AppLayout from "./layout/AppLayout";
+import AppAlertSetup from "./components/AppAlertSetup";
 import DashboardPage from "./pages/DashboardPage";
 import HomePage from "./pages/HomePage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -18,7 +19,8 @@ function App() {
     <ConfigProvider
       theme={getAppTheme(themeName, isDarkMode)}
     >
-      <div style={{ colorScheme: isDarkMode ? "dark" : "light" }}>
+      <AntApp style={{ colorScheme: isDarkMode ? "dark" : "light" }}>
+        <AppAlertSetup />
         <Routes>
           <Route element={
             <AppLayout
@@ -34,7 +36,7 @@ function App() {
           </Route>
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
-      </div>
+      </AntApp>
     </ConfigProvider>
   );
 }

@@ -1,5 +1,10 @@
 import { mockUsers } from "../mockUsers";
-import type { User, UserFormValues, UserListQuery, UserListResult } from "../types";
+import type {
+  User,
+  UserFormValues,
+  UserListQuery,
+  UserListResult,
+} from "../types";
 import { queryUsers } from "./queryUsers";
 
 let users = mockUsers.map((user) => ({ ...user }));
@@ -39,7 +44,11 @@ export async function createUser(values: UserFormValues): Promise<User> {
   if (values.activeYn !== "Y" && values.activeYn !== "N") {
     throw new Error("활성 여부는 Y 또는 N이어야 합니다.");
   }
-  if (users.some((user) => user.email.trim().toLowerCase() === email.toLowerCase())) {
+  if (
+    users.some(
+      (user) => user.email.trim().toLowerCase() === email.toLowerCase(),
+    )
+  ) {
     throw new Error("이미 등록된 이메일입니다.");
   }
 
