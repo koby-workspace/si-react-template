@@ -9,6 +9,11 @@ body {
   margin-bottom: 16px;
 }
 
+.user-list-actions {
+  display: flex;
+  gap: 8px;
+}
+
 .not-found-page {
   min-height: 100vh;
   box-sizing: border-box;

@@ -18,6 +18,9 @@ const SHOULD_FAIL_USER_LIST_AFTER_CREATE = false;
 // 수정 실패·수정 후 다음 조회 실패 확인 후 false로 복원합니다.
 const SHOULD_FAIL_USER_UPDATE = false;
 const SHOULD_FAIL_USER_LIST_AFTER_UPDATE = false;
+// 삭제 실패와 삭제 성공 후 목록 조회 실패를 각각 확인한 뒤 false로 복원합니다.
+const SHOULD_FAIL_USER_DELETE = false;
+const SHOULD_FAIL_USER_LIST_AFTER_DELETE = false;
 let shouldFailNextList = false;
 
 export async function getUsers(query: UserListQuery): Promise<UserListResult> {
@@ -104,5 +107,26 @@ export async function updateUser(id: string, values: UserFormValues): Promise<Us
   users = users.map((user) => user.id === id ? updatedUser : user);
   shouldFailNextList = SHOULD_FAIL_USER_LIST_AFTER_UPDATE;
   return { ...updatedUser };
+}
+
+export async function deleteUsers(ids: string[]): Promise<void> {
+  await new Promise<void>((resolve) => {
+    setTimeout(resolve, 400);
+  });
+
+  if (SHOULD_FAIL_USER_DELETE) {
+    throw new Error("사용자 삭제에 실패했습니다. 다시 삭제해 주세요.");
+  }
+
+  const uniqueIds = new Set(ids);
+  if (ids.length === 0 || uniqueIds.size !== ids.length) {
+    throw new Error("삭제할 사용자를 확인할 수 없습니다. 다시 선택해 주세요.");
+  }
+  if (ids.some((id) => !users.some((user) => user.id === id))) {
+    throw new Error("삭제할 사용자를 찾을 수 없습니다. 목록을 다시 조회해 주세요.");
+  }
+
+  users = users.filter((user) => !uniqueIds.has(user.id));
+  shouldFailNextList = SHOULD_FAIL_USER_LIST_AFTER_DELETE;
 }
 

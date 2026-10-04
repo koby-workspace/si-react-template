@@ -6,7 +6,7 @@ import UserSearchForm from "./components/UserSearchForm";
 import type { UserSearchValues } from "./components/UserSearchForm";
 import UserTable from "./components/UserTable";
 import UserFormModal from "./components/UserFormModal";
-import { createUser, getUsers, updateUser } from "./api/userApi";
+import { createUser, deleteUsers, getUsers, updateUser } from "./api/userApi";
 import type { User, UserFormValues, UserListQuery, UserListResult } from "./types";
 
 type UserPageProps = {
@@ -27,10 +27,13 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
   const [hasError, setHasError] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [saveError, setSaveError] = useState("");
-  const savedActionRef = useRef<"등록" | "수정" | null>(null);
+  const savedActionRef = useRef<"등록" | "수정" | "삭제" | null>(null);
   const savingRef = useRef(false);
+  const deletingRef = useRef(false);
 
   useEffect(() => {
     let ignore = false;
@@ -44,8 +47,9 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
       } catch {
         if (!ignore) {
           setHasError(true);
+          const completedAction = savedAction === "삭제" ? "삭제는" : `${savedAction}은`;
           appAlert.error(savedAction
-              ? `${savedAction}은 완료했지만 사용자 목록을 불러오지 못했습니다. 다시 검색하면 목록만 조회합니다.`
+              ? `${completedAction} 완료했지만 사용자 목록을 불러오지 못했습니다. 다시 검색하면 목록만 조회합니다.`
               : "사용자 목록을 불러오지 못했습니다. 다시 검색해 주세요.");
         }
       } finally {
@@ -60,7 +64,13 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
     };
   }, [query]);
 
-  function changeQuery(nextQuery: UserListQuery, savedAction: "등록" | "수정" | null = null) {
+  function changeQuery(nextQuery: UserListQuery, savedAction: "등록" | "수정" | "삭제" | null = null) {
+    if (
+      nextQuery.name !== query.name || nextQuery.activeYn !== query.activeYn ||
+      nextQuery.page !== query.page || savedAction
+    ) {
+      setSelectedUsers([]);
+    }
     savedActionRef.current = savedAction;
     setIsLoading(true);
     setHasError(false);
@@ -70,6 +80,7 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
     changeQuery({ ...query, ...values, page: 1 });
   }
   function handleReset() {
+    setSelectedUsers([]);
     changeQuery({ ...query, name: "", activeYn: "", page: 1 });
   }
   async function handleSave(values: UserFormValues) {
@@ -96,9 +107,57 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
   }
 
   function handleEdit(user: User) {
+    setSelectedUsers((current) => current.filter((selected) => selected.id !== user.id));
     setEditingUser(user);
     setSaveError("");
     setIsFormModalOpen(true);
+  }
+
+  function handleSelect(user: User, checked: boolean) {
+    setSelectedUsers((current) => checked
+      ? current.some((selected) => selected.id === user.id) ? current : [...current, user]
+      : current.filter((selected) => selected.id !== user.id));
+  }
+
+  function handleSelectPage(users: User[], checked: boolean) {
+    const pageIds = new Set(users.map((user) => user.id));
+    setSelectedUsers((current) => {
+      const otherPageUsers = current.filter((user) => !pageIds.has(user.id));
+      if (!checked) return otherPageUsers;
+      const currentPageUsers = users.filter((user) => !current.some((selected) => selected.id === user.id));
+      return [...otherPageUsers, ...current.filter((user) => pageIds.has(user.id)), ...currentPageUsers];
+    });
+  }
+
+  function handleDeleteSelected() {
+    if (selectedUsers.length === 0 || deletingRef.current) return;
+    const ids = selectedUsers.map((user) => user.id);
+    const names = selectedUsers.map((user) => user.name).join(", ");
+    const confirmModal = appAlert.confirm(
+      `선택한 사용자 ${ids.length}명을 삭제할까요? (${names})`,
+      async () => {
+        if (deletingRef.current) return;
+        deletingRef.current = true;
+        setIsDeleting(true);
+        try {
+          await deleteUsers(ids);
+          confirmModal.destroy();
+          await appAlert.success(`선택한 사용자 ${ids.length}명을 삭제했습니다.`);
+          const nextTotal = result.total - ids.length;
+          const lastPage = Math.max(1, Math.ceil(nextTotal / PAGE_SIZE));
+          changeQuery({ ...query, page: Math.min(query.page, lastPage) }, "삭제");
+        } catch (error) {
+          confirmModal.destroy();
+          await appAlert.error(
+            error instanceof Error ? error.message : "사용자 삭제에 실패했습니다. 다시 시도해 주세요.",
+          );
+        } finally {
+          deletingRef.current = false;
+          setIsDeleting(false);
+        }
+      },
+      "삭제",
+    );
   }
 
   return (
@@ -112,15 +171,16 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
       <p>변경한 데이터는 메뉴 이동 시 유지되며, 새로고침하면 초기화됩니다.</p>
       <div className="user-list-toolbar">
         <span>
-          {!isLoading && !hasError && `조회 결과: 총 ${result.total}건`}
+          {!isLoading && !hasError && `조회 결과: 총 ${result.total}건 · 선택 ${selectedUsers.length}명`}
         </span>
-        <Button type="primary" onClick={() => {
-          setSaveError("");
-          setEditingUser(null);
-          setIsFormModalOpen(true);
-        }}>
-          등록
-        </Button>
+        <div className="user-list-actions">
+          <Button danger disabled={selectedUsers.length === 0 || isDeleting} onClick={handleDeleteSelected}>삭제</Button>
+          <Button type="primary" onClick={() => {
+            setSaveError("");
+            setEditingUser(null);
+            setIsFormModalOpen(true);
+          }}>등록</Button>
+        </div>
       </div>
       {isLoading ? (
         <div role="status" aria-live="polite">
@@ -138,6 +198,9 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
               themeName={themeName}
               isDarkMode={isDarkMode}
               onEdit={handleEdit}
+              selectedUsers={selectedUsers}
+              onSelect={handleSelect}
+              onSelectPage={handleSelectPage}
             />
           )}
           <Pagination

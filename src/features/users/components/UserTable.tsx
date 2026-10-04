@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Button } from "antd";
+import { Button, Checkbox } from "antd";
 import { ClientSideRowModelModule } from "ag-grid-community";
 import type { ColDef, GetRowIdParams, ICellRendererParams } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
@@ -43,22 +43,47 @@ type UserTableProps = {
   themeName: ThemeName;
   isDarkMode: boolean;
   onEdit: (user: User) => void;
+  selectedUsers: User[];
+  onSelect: (user: User, checked: boolean) => void;
+  onSelectPage: (users: User[], checked: boolean) => void;
 };
 
-function UserTable({ users, themeName, isDarkMode, onEdit }: UserTableProps) {
+function UserTable({ users, themeName, isDarkMode, onEdit, selectedUsers, onSelect, onSelectPage }: UserTableProps) {
   const columnDefs = useMemo<ColDef<User>[]>(() => [
+    {
+      headerName: "선택",
+      width: 64,
+      minWidth: 64,
+      maxWidth: 64,
+      headerComponent: () => {
+        const selectedCount = users.filter((user) => selectedUsers.some((selected) => selected.id === user.id)).length;
+        return (
+          <Checkbox
+            aria-label="현재 페이지 전체 선택"
+            checked={users.length > 0 && selectedCount === users.length}
+            indeterminate={selectedCount > 0 && selectedCount < users.length}
+            onChange={(event) => onSelectPage(users, event.target.checked)}
+          />
+        );
+      },
+      cellRenderer: ({ data }: ICellRendererParams<User>) => data ? (
+        <Checkbox
+          aria-label={`${data.name} 선택`}
+          checked={selectedUsers.some((user) => user.id === data.id)}
+          onChange={(event) => onSelect(data, event.target.checked)}
+        />
+      ) : null,
+    },
     ...columns,
     {
       headerName: "작업",
       minWidth: 100,
       width: 100,
       cellRenderer: ({ data }: ICellRendererParams<User>) => data ? (
-        <Button size="small" aria-label={`${data.name} 수정`} onClick={() => onEdit(data)}>
-          수정
-        </Button>
+        <Button size="small" aria-label={`${data.name} 수정`} onClick={() => onEdit(data)}>수정</Button>
       ) : null,
     },
-  ], [onEdit]);
+  ], [onEdit, onSelect, onSelectPage, selectedUsers, users]);
   const gridTheme = useMemo(
     () => getGridTheme(themeName, isDarkMode),
     [themeName, isDarkMode],
