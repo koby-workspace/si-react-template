@@ -82,3 +82,63 @@ body {
   padding: 24px;
   overflow: auto;
 }
+
+/* Atelier Stone: keep the typography and spacing specific to this preset. */
+.ant-app.theme-atelier-stone .app-top {
+  border-bottom: 1px solid var(--atelier-border);
+}
+
+.ant-app.theme-atelier-stone .app-system-name {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+.ant-app.theme-atelier-stone .app-left {
+  border-right: 1px solid var(--atelier-border);
+}
+
+.ant-app.theme-atelier-stone .app-left-content {
+  padding: 24px 12px;
+}
+
+.ant-app.theme-atelier-stone .ant-menu-inline {
+  border-inline-end: none;
+}
+
+.ant-app.theme-atelier-stone .ant-menu-item-selected {
+  font-weight: 600;
+}
+
+.ant-app.theme-atelier-stone .app-content {
+  padding: 32px;
+}
+
+.ant-app.theme-atelier-stone h1 {
+  margin: 0 0 24px;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.8px;
+}
+
+.ant-app.theme-atelier-stone .app-content > p,
+.ant-app.theme-atelier-stone .not-found-page > p {
+  color: var(--atelier-muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.ant-app.theme-atelier-stone .app-content > p a,
+.ant-app.theme-atelier-stone .not-found-page > p a {
+  color: var(--atelier-accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+.ant-app.theme-atelier-stone .user-list-toolbar {
+  margin-top: 24px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}

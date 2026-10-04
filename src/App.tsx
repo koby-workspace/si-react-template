@@ -14,12 +14,22 @@ import "./styles.css";
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [themeName, setThemeName] = useState<ThemeName>("classic-blue");
+  const appTheme = getAppTheme(themeName, isDarkMode);
+  const appStyle = {
+    colorScheme: isDarkMode ? "dark" : "light",
+    "--atelier-border": appTheme.token?.colorBorderSecondary,
+    "--atelier-muted": appTheme.token?.colorTextSecondary,
+    "--atelier-accent": appTheme.token?.colorPrimary,
+  };
 
   return (
     <ConfigProvider
-      theme={getAppTheme(themeName, isDarkMode)}
+      theme={appTheme}
     >
-      <AntApp style={{ colorScheme: isDarkMode ? "dark" : "light" }}>
+      <AntApp
+        className={`theme-${themeName}`}
+        style={appStyle}
+      >
         <AppAlertSetup />
         <Routes>
           <Route element={

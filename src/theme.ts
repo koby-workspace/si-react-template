@@ -2,7 +2,9 @@ import { theme } from "antd";
 import type { ThemeConfig } from "antd";
 import { themeQuartz } from "ag-grid-community";
 
-export type ThemeName = "classic-blue" | "soft-green" | "modern-purple" | "minimal-mono" | "warm-orange";
+export type ThemeName = "classic-blue" | "soft-green" | "modern-purple" | "minimal-mono" | "warm-orange" | "atelier-stone";
+
+const ATELIER_FONT_FAMILY = '"Segoe UI", "Noto Sans KR", "Malgun Gothic", sans-serif';
 
 type ThemePalette = {
   primary: string;
@@ -16,6 +18,9 @@ type ThemePalette = {
   selectedText: string;
   border: string;
   tableHeader: string;
+  text?: string;
+  textSecondary?: string;
+  hover?: string;
 };
 
 type ThemePreset = {
@@ -30,6 +35,7 @@ export const themeOptions: { value: ThemeName; label: string }[] = [
   { value: "modern-purple", label: "Modern Purple" },
   { value: "minimal-mono", label: "Minimal Mono" },
   { value: "warm-orange", label: "Warm Orange" },
+  { value: "atelier-stone", label: "Atelier Stone" },
 ];
 
 const themePresets: Record<ThemeName, ThemePreset> = {
@@ -118,11 +124,31 @@ const themePresets: Record<ThemeName, ThemePreset> = {
       border: "#6c4e39", tableHeader: "#493121",
     },
   },
+  "atelier-stone": {
+    borderRadius: 4,
+    light: {
+      primary: "#305c54", layout: "#f6f5f0", container: "#fffefa",
+      header: "#fffefa", headerText: "#292f2b",
+      sidebar: "#eeeee6", sidebarText: "#505950",
+      selected: "#dce7df", selectedText: "#254c42",
+      border: "#d6dbd2", tableHeader: "#eeeee7",
+      text: "#292f2b", textSecondary: "#626b61", hover: "#e5e9e1",
+    },
+    dark: {
+      primary: "#8bbcaf", layout: "#171e1b", container: "#202925",
+      header: "#1c2420", headerText: "#e6e9df",
+      sidebar: "#1c2420", sidebarText: "#bac4b8",
+      selected: "#304b40", selectedText: "#c5dfcf",
+      border: "#3e4b43", tableHeader: "#29352e",
+      text: "#e6e9df", textSecondary: "#a9b5a7", hover: "#27382f",
+    },
+  },
 };
 
 export function getAppTheme(themeName: ThemeName, isDarkMode: boolean): ThemeConfig {
   const preset = themePresets[themeName];
   const palette = isDarkMode ? preset.dark : preset.light;
+  const isAtelier = themeName === "atelier-stone";
 
   return {
     algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
@@ -134,6 +160,19 @@ export function getAppTheme(themeName: ThemeName, isDarkMode: boolean): ThemeCon
       colorBorder: palette.border,
       colorBorderSecondary: palette.border,
       borderRadius: preset.borderRadius,
+      ...(isAtelier ? {
+        fontFamily: ATELIER_FONT_FAMILY,
+        colorText: palette.text,
+        colorTextSecondary: palette.textSecondary,
+        colorTextHeading: palette.text,
+        controlHeight: 36,
+        boxShadow: isDarkMode
+          ? "0 12px 40px rgb(0 0 0 / 32%)"
+          : "0 12px 40px rgb(41 47 43 / 10%)",
+        boxShadowSecondary: isDarkMode
+          ? "0 6px 24px rgb(0 0 0 / 28%)"
+          : "0 6px 24px rgb(41 47 43 / 8%)",
+      } : {}),
       ...(themeName === "minimal-mono" ? { boxShadow: "none", boxShadowSecondary: "none" } : {}),
     },
     components: {
@@ -146,13 +185,24 @@ export function getAppTheme(themeName: ThemeName, isDarkMode: boolean): ThemeCon
       Menu: {
         itemBg: palette.sidebar,
         itemColor: palette.sidebarText,
-        itemHoverBg: palette.selected,
+        itemHoverBg: palette.hover ?? palette.selected,
         itemHoverColor: palette.selectedText,
         itemSelectedBg: palette.selected,
         itemSelectedColor: palette.selectedText,
         itemActiveBg: palette.selected,
         itemBorderRadius: preset.borderRadius,
+        ...(isAtelier ? { itemHeight: 42, itemMarginBlock: 6 } : {}),
       },
+      ...(isAtelier ? {
+        Button: {
+          primaryShadow: "none", defaultShadow: "none", dangerShadow: "none",
+          fontWeight: 500,
+          primaryColor: isDarkMode ? "#172e25" : "#fffefa",
+          ...(isDarkMode ? { colorPrimaryActive: "#719b91" } : {}),
+        },
+        Checkbox: { colorWhite: isDarkMode ? "#172e25" : "#fffefa" },
+        Form: { labelColor: palette.textSecondary },
+      } : {}),
     },
   };
 }
@@ -164,7 +214,7 @@ export function getGridTheme(themeName: ThemeName, isDarkMode: boolean) {
   return themeQuartz.withParams({
     browserColorScheme: isDarkMode ? "dark" : "light",
     backgroundColor: palette.container,
-    foregroundColor: isDarkMode ? "#eeeeee" : "#222222",
+    foregroundColor: palette.text ?? (isDarkMode ? "#eeeeee" : "#222222"),
     headerBackgroundColor: palette.tableHeader,
     borderColor: palette.border,
     accentColor: palette.primary,
@@ -174,5 +224,16 @@ export function getGridTheme(themeName: ThemeName, isDarkMode: boolean) {
     fontSize: 14,
     rowHeight: 48,
     headerHeight: 48,
+    ...(themeName === "atelier-stone" ? {
+      fontFamily: ATELIER_FONT_FAMILY,
+      headerTextColor: palette.textSecondary,
+      headerFontWeight: 600,
+      rowHoverColor: palette.hover,
+      selectedRowBackgroundColor: palette.selected,
+      columnBorder: false,
+      headerColumnBorder: false,
+      headerColumnResizeHandleColor: "transparent",
+      wrapperBorder: true,
+    } : {}),
   });
 }
