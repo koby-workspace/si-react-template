@@ -11,13 +11,19 @@ let users = mockUsers.map((user) => ({ ...user }));
 
 // 오류 화면 확인 시 true로 변경하고, 확인 후 false로 되돌립니다.
 const SHOULD_FAIL_USER_LIST = false;
+// 저장 실패와 저장 성공 후 조회 실패를 따로 확인합니다. 확인 후 false로 복원합니다.
+const SHOULD_FAIL_USER_CREATE = false;
+// 등록 직후의 다음 조회 한 번만 실패하며, 검색으로 재시도하면 정상 조회합니다.
+const SHOULD_FAIL_USER_LIST_AFTER_CREATE = false;
+let shouldFailNextList = false;
 
 export async function getUsers(query: UserListQuery): Promise<UserListResult> {
   await new Promise<void>((resolve) => {
     setTimeout(resolve, 400);
   });
 
-  if (SHOULD_FAIL_USER_LIST) {
+  if (SHOULD_FAIL_USER_LIST || shouldFailNextList) {
+    shouldFailNextList = false;
     throw new Error("모의 사용자 목록 조회 실패");
   }
 
@@ -28,6 +34,10 @@ export async function createUser(values: UserFormValues): Promise<User> {
   await new Promise<void>((resolve) => {
     setTimeout(resolve, 400);
   });
+
+  if (SHOULD_FAIL_USER_CREATE) {
+    throw new Error("사용자 등록에 실패했습니다. 다시 저장해 주세요.");
+  }
 
   const id = values.id.trim();
   const name = values.name.trim();
@@ -60,5 +70,7 @@ export async function createUser(values: UserFormValues): Promise<User> {
     activeYn: values.activeYn,
   };
   users = [user, ...users];
+  shouldFailNextList = SHOULD_FAIL_USER_LIST_AFTER_CREATE;
   return { ...user };
 }
+
