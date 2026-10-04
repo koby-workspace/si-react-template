@@ -42,7 +42,7 @@ function UserFormModal({ onCancel, onSave, isSaving, saveError, editingUser }: U
       onCancel={onCancel}
       styles={{ body: { paddingBottom: 72 } }}
     >
-      <p>{editingUser ? "수정 저장은 개발 중입니다. 입력해도 변경 내용은 저장되지 않습니다." : "등록한 데이터는 새로고침하면 초기화됩니다."}</p>
+      <p>저장한 데이터는 새로고침하면 초기화됩니다.</p>
       {saveError && (
         <Alert
           type="error"

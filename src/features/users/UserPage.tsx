@@ -6,7 +6,7 @@ import UserSearchForm from "./components/UserSearchForm";
 import type { UserSearchValues } from "./components/UserSearchForm";
 import UserTable from "./components/UserTable";
 import UserFormModal from "./components/UserFormModal";
-import { createUser, getUsers } from "./api/userApi";
+import { createUser, getUsers, updateUser } from "./api/userApi";
 import type { User, UserFormValues, UserListQuery, UserListResult } from "./types";
 
 type UserPageProps = {
@@ -29,12 +29,12 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
-  const isQueryAfterCreateRef = useRef(false);
+  const savedActionRef = useRef<"등록" | "수정" | null>(null);
   const savingRef = useRef(false);
 
   useEffect(() => {
     let ignore = false;
-    const isQueryAfterCreate = isQueryAfterCreateRef.current;
+    const savedAction = savedActionRef.current;
     async function loadUsers() {
       try {
         const nextResult = await getUsers(query);
@@ -44,8 +44,8 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
       } catch {
         if (!ignore) {
           setHasError(true);
-          appAlert.error(isQueryAfterCreate
-              ? "등록은 완료했지만 사용자 목록을 불러오지 못했습니다. 다시 검색하면 목록만 조회합니다."
+          appAlert.error(savedAction
+              ? `${savedAction}은 완료했지만 사용자 목록을 불러오지 못했습니다. 다시 검색하면 목록만 조회합니다.`
               : "사용자 목록을 불러오지 못했습니다. 다시 검색해 주세요.");
         }
       } finally {
@@ -60,8 +60,8 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
     };
   }, [query]);
 
-  function changeQuery(nextQuery: UserListQuery, isAfterCreate = false) {
-    isQueryAfterCreateRef.current = isAfterCreate;
+  function changeQuery(nextQuery: UserListQuery, savedAction: "등록" | "수정" | null = null) {
+    savedActionRef.current = savedAction;
     setIsLoading(true);
     setHasError(false);
     setQuery(nextQuery);
@@ -72,18 +72,23 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
   function handleReset() {
     changeQuery({ ...query, name: "", activeYn: "", page: 1 });
   }
-  async function handleCreate(values: UserFormValues) {
+  async function handleSave(values: UserFormValues) {
     if (savingRef.current) return;
     savingRef.current = true;
     setIsSaving(true);
     setSaveError("");
+    const action = editingUser ? "수정" : "등록";
     try {
-      await createUser(values);
+      if (editingUser) {
+        await updateUser(editingUser.id, values);
+      } else {
+        await createUser(values);
+      }
       setIsFormModalOpen(false);
-      await appAlert.success("사용자를 등록했습니다. 목록에는 적용된 검색 조건에 맞는 사용자만 표시됩니다.");
-      changeQuery({ ...query, page: 1 }, true);
+      await appAlert.success(`사용자를 ${action}했습니다. 목록에는 적용된 검색 조건에 맞는 사용자만 표시됩니다.`);
+      changeQuery({ ...query, page: 1 }, action);
     } catch (error) {
-      setSaveError(error instanceof Error ? error.message : "사용자 등록에 실패했습니다. 다시 저장해 주세요.");
+      setSaveError(error instanceof Error ? error.message : `사용자 ${action}에 실패했습니다. 다시 저장해 주세요.`);
     } finally {
       savingRef.current = false;
       setIsSaving(false);
@@ -94,14 +99,6 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
     setEditingUser(user);
     setSaveError("");
     setIsFormModalOpen(true);
-  }
-
-  async function handleSave(values: UserFormValues) {
-    if (editingUser !== null) {
-      setSaveError("수정 저장은 개발 중입니다. 변경 내용은 저장되지 않았습니다.");
-      return;
-    }
-    await handleCreate(values);
   }
 
   return (

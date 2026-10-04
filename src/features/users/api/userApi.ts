@@ -15,6 +15,9 @@ const SHOULD_FAIL_USER_LIST = false;
 const SHOULD_FAIL_USER_CREATE = false;
 // 등록 직후의 다음 조회 한 번만 실패하며, 검색으로 재시도하면 정상 조회합니다.
 const SHOULD_FAIL_USER_LIST_AFTER_CREATE = false;
+// 수정 실패·수정 후 다음 조회 실패 확인 후 false로 복원합니다.
+const SHOULD_FAIL_USER_UPDATE = false;
+const SHOULD_FAIL_USER_LIST_AFTER_UPDATE = false;
 let shouldFailNextList = false;
 
 export async function getUsers(query: UserListQuery): Promise<UserListResult> {
@@ -72,5 +75,34 @@ export async function createUser(values: UserFormValues): Promise<User> {
   users = [user, ...users];
   shouldFailNextList = SHOULD_FAIL_USER_LIST_AFTER_CREATE;
   return { ...user };
+}
+
+export async function updateUser(id: string, values: UserFormValues): Promise<User> {
+  await new Promise<void>((resolve) => {
+    setTimeout(resolve, 400);
+  });
+
+  if (SHOULD_FAIL_USER_UPDATE) {
+    throw new Error("사용자 수정에 실패했습니다. 다시 저장해 주세요.");
+  }
+  const existingUser = users.find((user) => user.id === id);
+  if (!existingUser) throw new Error("수정할 사용자를 찾을 수 없습니다.");
+  const name = values.name.trim();
+  const email = values.email.trim();
+  const department = values.department.trim();
+  if (!name) throw new Error("이름을 입력해 주세요.");
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error("올바른 이메일을 입력해 주세요.");
+  }
+  if (values.activeYn !== "Y" && values.activeYn !== "N") {
+    throw new Error("활성 여부는 Y 또는 N이어야 합니다.");
+  }
+  if (users.some((user) => user.id !== id && user.email.trim().toLowerCase() === email.toLowerCase())) {
+    throw new Error("이미 등록된 이메일입니다.");
+  }
+  const updatedUser: User = { ...existingUser, name, email, department, activeYn: values.activeYn };
+  users = users.map((user) => user.id === id ? updatedUser : user);
+  shouldFailNextList = SHOULD_FAIL_USER_LIST_AFTER_UPDATE;
+  return { ...updatedUser };
 }
 
