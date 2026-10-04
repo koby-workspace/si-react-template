@@ -1,14 +1,15 @@
 import { Alert, Form, Input, Modal, Select } from "antd";
-import type { UserFormValues } from "../types";
+import type { User, UserFormValues } from "../types";
 
 type UserFormModalProps = {
   onCancel: () => void;
   onSave: (values: UserFormValues) => Promise<void>;
   isSaving: boolean;
   saveError: string;
+  editingUser: User | null;
 };
 
-function UserFormModal({ onCancel, onSave, isSaving, saveError }: UserFormModalProps) {
+function UserFormModal({ onCancel, onSave, isSaving, saveError, editingUser }: UserFormModalProps) {
   const [form] = Form.useForm<UserFormValues>();
 
   function handleFinish(values: UserFormValues) {
@@ -26,7 +27,7 @@ function UserFormModal({ onCancel, onSave, isSaving, saveError }: UserFormModalP
 
   return (
     <Modal
-      title="사용자 등록"
+      title={editingUser ? "사용자 수정" : "사용자 등록"}
       open
       centered
       okText="저장"
@@ -41,7 +42,7 @@ function UserFormModal({ onCancel, onSave, isSaving, saveError }: UserFormModalP
       onCancel={onCancel}
       styles={{ body: { paddingBottom: 72 } }}
     >
-      <p>등록한 데이터는 새로고침하면 초기화됩니다.</p>
+      <p>{editingUser ? "수정 저장은 개발 중입니다. 입력해도 변경 내용은 저장되지 않습니다." : "등록한 데이터는 새로고침하면 초기화됩니다."}</p>
       {saveError && (
         <Alert
           type="error"
@@ -50,11 +51,11 @@ function UserFormModal({ onCancel, onSave, isSaving, saveError }: UserFormModalP
         />
       )}
       <Form<UserFormValues>
-        name="user-create"
+        name={editingUser ? "user-edit" : "user-create"}
         form={form}
         layout="vertical"
         disabled={isSaving}
-        initialValues={{ id: "", name: "", email: "", department: "", activeYn: "Y" }}
+        initialValues={editingUser ?? { id: "", name: "", email: "", department: "", activeYn: "Y" }}
         onFinish={handleFinish}
       >
         <Form.Item
@@ -62,7 +63,7 @@ function UserFormModal({ onCancel, onSave, isSaving, saveError }: UserFormModalP
           label="ID"
           rules={[{ required: true, whitespace: true, message: "ID를 입력해 주세요." }]}
         >
-          <Input />
+          <Input readOnly={editingUser !== null} />
         </Form.Item>
         <Form.Item
           name="name"

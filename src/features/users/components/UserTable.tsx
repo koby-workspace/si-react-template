@@ -1,6 +1,7 @@
 import { useMemo } from "react";
+import { Button } from "antd";
 import { ClientSideRowModelModule } from "ag-grid-community";
-import type { ColDef, GetRowIdParams } from "ag-grid-community";
+import type { ColDef, GetRowIdParams, ICellRendererParams } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { getGridTheme } from "../../../theme";
 import type { ThemeName } from "../../../theme";
@@ -41,9 +42,23 @@ type UserTableProps = {
   users: User[];
   themeName: ThemeName;
   isDarkMode: boolean;
+  onEdit: (user: User) => void;
 };
 
-function UserTable({ users, themeName, isDarkMode }: UserTableProps) {
+function UserTable({ users, themeName, isDarkMode, onEdit }: UserTableProps) {
+  const columnDefs = useMemo<ColDef<User>[]>(() => [
+    ...columns,
+    {
+      headerName: "작업",
+      minWidth: 100,
+      width: 100,
+      cellRenderer: ({ data }: ICellRendererParams<User>) => data ? (
+        <Button size="small" aria-label={`${data.name} 수정`} onClick={() => onEdit(data)}>
+          수정
+        </Button>
+      ) : null,
+    },
+  ], [onEdit]);
   const gridTheme = useMemo(
     () => getGridTheme(themeName, isDarkMode),
     [themeName, isDarkMode],
@@ -53,7 +68,7 @@ function UserTable({ users, themeName, isDarkMode }: UserTableProps) {
     <AgGridReact<User>
       modules={modules}
       theme={gridTheme}
-      columnDefs={columns}
+      columnDefs={columnDefs}
       defaultColDef={defaultColDef}
       rowData={users}
       getRowId={getRowId}

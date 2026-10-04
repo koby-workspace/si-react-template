@@ -7,7 +7,7 @@ import type { UserSearchValues } from "./components/UserSearchForm";
 import UserTable from "./components/UserTable";
 import UserFormModal from "./components/UserFormModal";
 import { createUser, getUsers } from "./api/userApi";
-import type { UserFormValues, UserListQuery, UserListResult } from "./types";
+import type { User, UserFormValues, UserListQuery, UserListResult } from "./types";
 
 type UserPageProps = {
   themeName: ThemeName;
@@ -25,7 +25,8 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
   const [result, setResult] = useState<UserListResult>({ items: [], total: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const isQueryAfterCreateRef = useRef(false);
@@ -78,7 +79,7 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
     setSaveError("");
     try {
       await createUser(values);
-      setIsCreateModalOpen(false);
+      setIsFormModalOpen(false);
       await appAlert.success("사용자를 등록했습니다. 목록에는 적용된 검색 조건에 맞는 사용자만 표시됩니다.");
       changeQuery({ ...query, page: 1 }, true);
     } catch (error) {
@@ -87,6 +88,20 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
       savingRef.current = false;
       setIsSaving(false);
     }
+  }
+
+  function handleEdit(user: User) {
+    setEditingUser(user);
+    setSaveError("");
+    setIsFormModalOpen(true);
+  }
+
+  async function handleSave(values: UserFormValues) {
+    if (editingUser !== null) {
+      setSaveError("수정 저장은 개발 중입니다. 변경 내용은 저장되지 않았습니다.");
+      return;
+    }
+    await handleCreate(values);
   }
 
   return (
@@ -104,7 +119,8 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
         </span>
         <Button type="primary" onClick={() => {
           setSaveError("");
-          setIsCreateModalOpen(true);
+          setEditingUser(null);
+          setIsFormModalOpen(true);
         }}>
           등록
         </Button>
@@ -124,6 +140,7 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
               users={result.items}
               themeName={themeName}
               isDarkMode={isDarkMode}
+              onEdit={handleEdit}
             />
           )}
           <Pagination
@@ -136,12 +153,13 @@ function UserPage({ themeName, isDarkMode }: UserPageProps) {
           />
         </>
       )}
-      {isCreateModalOpen && (
+      {isFormModalOpen && (
         <UserFormModal
-          onCancel={() => { if (!savingRef.current) setIsCreateModalOpen(false); }}
-          onSave={handleCreate}
+          onCancel={() => { if (!savingRef.current) setIsFormModalOpen(false); }}
+          onSave={handleSave}
           isSaving={isSaving}
           saveError={saveError}
+          editingUser={editingUser}
         />
       )}
     </>
